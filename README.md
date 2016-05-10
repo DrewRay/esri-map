@@ -14,7 +14,7 @@ This project is dependent on AngularJS and ArcGIS. Add the following to your ind
 ```
 <link rel="stylesheet"" href="https://js.arcgis.com/3.16/esri/css/esri.css">
 <script src="https://js.arcgis.com/3.16/"></script>
-<script src="map.directive.js"></script>
+<script src="https://raw.githubusercontent.com/savtwo/esri-map/master/map.directive.js"></script>
 ```
 
 ### SETUP
