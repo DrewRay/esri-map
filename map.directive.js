@@ -10,7 +10,7 @@ function crfMap($compile, $document, $rootScope) {
     restrict: "E",
     scope: {
       member: "=", // two way string binding
-      cb: "&" // callback function
+      callback: "&" // callback function
     },
     controller: ctrl, // using ctrl() from below
     controllerAs: "c", // alias for ctrl() used in the template html

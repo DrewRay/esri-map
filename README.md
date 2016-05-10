@@ -6,10 +6,9 @@ This project is built using:
 * AngularJS
 * ArcGIS
 
-First time setup
-----------------
+### SETUP
 
-This project is dependent on AngularJS and ArcGIS. Add the following to your index:
+This project is dependent on AngularJS and ArcGIS. Add the following to your header:
 
 ```
 <link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
@@ -17,27 +16,14 @@ This project is dependent on AngularJS and ArcGIS. Add the following to your ind
 <script src="https://rawgit.com/savtwo/esri-map/master/map.directive.js"></script>
 ```
 
-### SETUP
-
-Start by cloning the repository to your local machine. If you don't have a personal branch, run:
-
-```
-git checkout [name of branch]
-git checkout -b [name of your branch]
-```
-
-Then run bower to get AngularJS
-
-```bower install```
-
 ### Including in HTML
 
-`<crf-map member="" cb=""></crf-map>`
+`<crf-map member="" callback=""></crf-map>`
 
 ### Directive Properties
 
 #### member
 > **Type:** Object
 
-#### cb
+#### callback
 > Callback function that returns the member and provider data object from the directive
