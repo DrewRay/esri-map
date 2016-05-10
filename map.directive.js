@@ -2,12 +2,12 @@
   /**
    * Create angular application module called "map.app"
    */
-  angular.module("map.app", []);
+  angular.module("IE.index", []);
   
   /**
    * Create directive called "crfMap" that is applied to module called "map.app"
    */
-  angular.module("map.app").directive("crfMap", crfMap);
+  angular.module("IE.index").directive("crfMap", crfMap);
   
   crfMap.$inject = ["$compile", "$document", "$rootScope"];
   /* @ngInejct */
