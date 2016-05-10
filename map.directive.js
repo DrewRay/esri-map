@@ -119,7 +119,7 @@
         
         function mapLoaded() {
           var providers = $scope.providerData;
-          var pms = new PictureMarkerSymbol("pin_default.png", 18, 25);
+          var pms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/master/pin_default.png", 18, 25);
           
           arrayUtils.forEach(providers, function(provider) {
             var graphic = new Graphic(new Point(provider.geometry.y, provider.geometry.x), pms);
