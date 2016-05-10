@@ -1,0 +1,11 @@
+{
+  "name": "crf-map",
+  "version": "0.0.0",
+  "authors": [
+    "Sav By <sav@optum.com"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "angular": "~1.4.0"
+  }
+}
