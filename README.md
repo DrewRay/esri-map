@@ -12,7 +12,7 @@ First time setup
 This project is dependent on AngularJS and ArcGIS. Add the following to your index:
 
 ```
-<link rel="stylesheet"" href="https://js.arcgis.com/3.16/esri/css/esri.css">
+<link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
 <script src="https://js.arcgis.com/3.16/"></script>
 <script src="https://raw.githubusercontent.com/savtwo/esri-map/master/map.directive.js"></script>
 ```
