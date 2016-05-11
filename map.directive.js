@@ -90,7 +90,7 @@ function crfMap($compile, $document, $rootScope) {
         ]
       };
       
-      $scope.cb()(requestedData);        
+      $scope.callback()(requestedData);        
     }
   }
   
