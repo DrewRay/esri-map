@@ -25,7 +25,7 @@ function crfMap($compile, $document, $rootScope) {
   function ctrl($scope) {
     var vm = $scope;
 
-    vm.provider = provider;
+    $scope.provider = provider;
     vm.providerData = [
       {
         id: 1234,
@@ -94,7 +94,7 @@ function crfMap($compile, $document, $rootScope) {
     }
   }
   
-  function postLink($scope) {
+  function postLink($scope, ele, attrs, ctrl) {
     require(["esri/map", "esri/geometry/Point", "esri/symbols/PictureMarkerSymbol", "esri/graphic", "dojo/_base/array", "dojo/domReady!"], 
     function(Map, Point, PictureMarkerSymbol, Graphic, arrayUtils) {
       map = new Map("map", {
@@ -108,7 +108,7 @@ function crfMap($compile, $document, $rootScope) {
         if (!evt.graphic) {
           return;
         }
-        showPopup([evt.graphic], evt.graphic.attributes, evt.mapPoint, $scope);
+        showPopup([evt.graphic], evt.graphic.attributes, evt.mapPoint);
       });
       
       function mapLoaded() {
@@ -122,7 +122,7 @@ function crfMap($compile, $document, $rootScope) {
         });
       }
       
-      function showPopup(features, attrs, point, vm) {
+      function showPopup(features, attrs, point) {
         var title = "Provider: " + attrs.name;
         var content = "" +
           "<div>" +
@@ -132,15 +132,15 @@ function crfMap($compile, $document, $rootScope) {
             "<button ng-click='selectProvider(attrs)'>Select Provider</button>" +
           "</div>";
           
-        var $scope = $rootScope.$new(true);
-        $scope.selectProvider = selectProvider;
-        $scope.attrs = attrs;
+        var scope = $rootScope.$new(true);
+        scope.selectProvider = selectProvider;
+        scope.attrs = attrs;
         
-        var compiled = $compile(content)($scope);
+        var compiled = $compile(content)(scope);
 
         map.infoWindow.setFeatures(features);
         map.infoWindow.setTitle(title);
-        map.infoWindow.setContent(compiled[0]);
+        map.infoWindow.setContent(content);
         map.infoWindow.show(point);
         
         var contentPane = $document.find(".esriPopup .contentPane");
@@ -150,7 +150,7 @@ function crfMap($compile, $document, $rootScope) {
         contentElement.append(compiled);
         
         function selectProvider(provider) {
-          vm.provider(provider);
+          $scope.provider(provider);
         }
       }
     });
