@@ -25,7 +25,9 @@ This project is dependent on AngularJS, jquery, and ArcGIS. Add the following to
 
 #### member
 > **Type:** Object
-> ***Example Structure:*** {
+> ***Example Structure:*** 
+```
+{
   transactionId: 123,
   needs: [
     {
@@ -55,10 +57,13 @@ This project is dependent on AngularJS, jquery, and ArcGIS. Add the following to
     }
   ]
 }
+```
 
 #### callback
 > Callback function that returns the member and provider data object from the directive
-> ***Example Structur:*** {
+> ***Example Structur:*** 
+```
+{
   transactionId: 123,
   needs: [
     {
@@ -91,3 +96,4 @@ This project is dependent on AngularJS, jquery, and ArcGIS. Add the following to
     }
   ]
 }
+```
