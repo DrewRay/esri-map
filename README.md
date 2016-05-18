@@ -4,11 +4,12 @@ CRF Map Directive POC
 This project is built using:
 
 * AngularJS
+* jquery
 * ArcGIS
 
 ### SETUP
 
-This project is dependent on AngularJS and ArcGIS. Add the following to your header:
+This project is dependent on AngularJS, jquery, and ArcGIS. Add the following to your header:
 
 ```
 <link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">

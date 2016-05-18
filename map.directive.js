@@ -1,10 +1,10 @@
 /**
- * Create directive called "crfMap" that is applied to module called "map.app"
+ * Create directive called "crfMap" that is applied to module called "IE.index"
  */
 angular.module("IE.index").directive("crfMap", crfMap);
 
 crfMap.$inject = ["$compile", "$document", "$rootScope"];
-/* @ngInejct */
+/* @ngInject */
 function crfMap($compile, $document, $rootScope) {
   return {
     restrict: "E",
