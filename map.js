@@ -50,7 +50,7 @@
             require(["esri/graphic", "esri/symbols/PictureMarkerSymbol", "esri/geometry/Point",], function(Graphic, PictureMarkerSymbol, Point) {
             
               $scope.map.graphics.clear();
-              var pms = new PictureMarkerSymbol("img/pin_default.png", 18, 25);
+              var pms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/master/pin_default.png", 18, 25);
               
               providerData.forEach(function(provider) {
                 var graphic = new Graphic(new Point(provider.geometry.x, provider.geometry.y), pms);
