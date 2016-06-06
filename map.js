@@ -1,7 +1,7 @@
 (function() {
   "use strict";
   
-  angular.module("IE.crfMap", [])
+  angular.module("IE.index", [])
   /**
    * Create directive called "crfMap" that is applied to module called "IE.index"
    */
@@ -151,7 +151,8 @@
         center: [-93.45536540319006, 44.85786213722895],
         zoom: 11
       },
-      resouresLayerUrl: "https://map-stg.optum.com/arcgis/rest/services/Projects/OCRF_ResourceLocations/MapServer/0/query"
+      // resouresLayerUrl: "https://map-stg.optum.com/arcgis/rest/services/Projects/OCRF_ResourceLocations/MapServer/0/query"
+      resouresLayerUrl: "https://healthstate.optum.com/arcgis/rest/services/crf/resources/MapServer/0/query"
     };
     self.getProviders = getProviders;
     
@@ -183,7 +184,8 @@
         f: "pjson"
       };
 
-      return $http.get("https://map-stg.optum.com/arcgis/rest/services/Projects/OCRF_ResourceLocations/MapServer/0/query", { params: qs }).then(success, fail);
+      // return $http.get("https://map-stg.optum.com/arcgis/rest/services/Projects/OCRF_ResourceLocations/MapServer/0/query", { params: qs }).then(success, fail);
+      return $http.get("https://healthstate.optum.com/arcgis/rest/services/crf/resources/MapServer/0/query", { params: qs }).then(success, fail);
       
       function success(response) {
         return response.data;
