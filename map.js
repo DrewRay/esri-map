@@ -1,15 +1,10 @@
 (function() {
   "use strict";
   
-  angular.module("IE.crfMap", [
-    // "esri.map",
-    // "ui.bootstrap",
-    // "rzModule"
-  ]);
   /**
    * Create directive called "crfMap" that is applied to module called "IE.index"
    */
-  angular.module("IE.crfMap").directive("crfMap", crfMap)
+  angular.module("IE.index").directive("crfMap", crfMap)
   .controller("crfMapCtrl", crfMapCtrl)
   .service("crfMapService", crfMapService);
 
@@ -25,18 +20,6 @@
       template: 
         "<div id='container'>" +
           "<div id='map'></div>" +
-          // "<img id='travel' src='img/radius_pin_small.png' ng-click='travelRadius(member)'>" +
-          // "<div id='travel' ng-class='{\"travel-minimized\": !travelRadiusVisible}' tooltip-placement='bottom' uib-tooltip='Travel Radius' tooltip-enable='!travelRadiusVisible'>" +
-          //   "<div ng-class='{\"spinner\": travelSlider.options.disabled}'></div>" +
-          //   "<div id='travel-inner'>" +
-          //     "<img ng-if='travelType == \"walk\"' ng-class='{\"travel-type-icon-walk\":!travelSlider.options.disabled, \"travel-type-icon-walk-disabled\":travelSlider.options.disabled}' src='/img/walk_on.png'  alt='placeholder'>" +
-          //     "<img ng-if='travelType != \"walk\"' ng-class='{\"travel-type-icon-walk\":!travelSlider.options.disabled, \"travel-type-icon-walk-disabled\":travelSlider.options.disabled}' src='/img/walk_off.png' alt='placeholder' ng-click='loadTravelRadius(\"walk\")'>" +
-          //     "<img ng-if='travelType == \"drive\"' ng-class='{\"travel-type-icon\":!travelSlider.options.disabled, \"travel-type-icon-disabled\":travelSlider.options.disabled}' src='/img/drive_on.png' alt='placeholder'>" +
-          //     "<img ng-if='travelType != \"drive\"' ng-class='{\"travel-type-icon\":!travelSlider.options.disabled, \"travel-type-icon-disabled\":travelSlider.options.disabled}' src='/img/drive_off.png' alt='placeholder' ng-click='loadTravelRadius(\"drive\")'>" +
-          //     "<rzslider rz-slider-model='travelSlider.value' rz-slider-options='travelSlider.options'></rzslider>" +
-          //     "<img ng-class='{\"travel-toggle-icon\":!travelSlider.options.disabled,\"travel-toggle-icon-disabled\":travelSlider.options.disabled}' src='/img/radius_pin.png' alt='placeholder' ng-click='toggleTravelRadiusVisibility()'></img>" +
-          //   "</div>" +
-          // "</div>" +
           "<div id='listview' ng-if='show'>" +
             "<div class='listview-header'>" +
               "<span class='listview-name'>{{attrs.Name}}</span><span ng-click='closeDetails(false)' class='cux-icon-close'></span>" +
@@ -51,7 +34,6 @@
             "Tags: {{attrs.SearchTags}}<br/><br/>" +
             "<button ng-click='provider(attrs)'>Select Provider</button>" +
           "</div>" +
-          // "<h6>Selecting for: {{member.needs[0].firstName}} {{member.needs[0].lastName}}</h6>" +
         "</div>",
       controller: "crfMapCtrl",
       controllerAs: "c", // alias for ctrl() used in the template html
@@ -84,10 +66,6 @@
       "esri/tasks/ServiceAreaTask", "esri/symbols/SimpleFillSymbol", "esri/symbols/PictureMarkerSymbol", "esri/layers/FeatureLayer"], 
       function(Map, SimpleMarkerSymbol, SimpleLineSymbol, Color, Point, Graphic, FeatureSet, ServiceAreaParameters, ServiceAreaTask, SimpleFillSymbol, PictureMarkerSymbol, FeatureLayer) {
         $scope.map = new Map("map", crfMapService.attributes.options);
-        // var travelRadiusLayer = new FeatureLayer("https://map-stg.optum.com/arcgis/rest/services/Projects/OCRF_ResourceLocations/MapServer/0", {
-        //   id: "travelRadius"
-        // });
-        // $scope.map.addLayer(travelRadiusLayer);
         $scope.map.on("click", function(evt) {
           if (!evt.graphic) {
             return;
