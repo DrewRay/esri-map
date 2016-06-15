@@ -1,10 +1,11 @@
 (function() {
   "use strict";
   
+  angular.module("IE.crfMap", [])
   /**
    * Create directive called "crfMap" that is applied to module called "IE.index"
    */
-  angular.module("IE.index").directive("crfMap", crfMap)
+  .directive("crfMap", crfMap)
   .controller("crfMapCtrl", crfMapCtrl)
   .service("crfMapService", crfMapService);
 
@@ -73,9 +74,9 @@
           
           var lastPoint = $scope.map.graphics.graphics[$scope.map.graphics.graphics.length - 1];
           var clickedPoint = evt.graphic;
-          if (lastPoint.symbol.url == "img/pin_selected-blue.png") {
+          if (lastPoint.symbol.url == "https://rawgit.com/savtwo/esri-map/master/pin_selected-blue.png") {
             //replace old graphic with original image
-            var oldPms = new PictureMarkerSymbol("img/pin_default.png", 18, 25);
+            var oldPms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/master/pin_default.png", 18, 25);
             var oldGraphic = new Graphic(new Point(lastPoint.geometry.x, lastPoint.geometry.y), oldPms);
             oldGraphic.attributes = lastPoint.attributes.attributes;
             $scope.map.graphics.add(oldGraphic);
@@ -85,7 +86,7 @@
           }
           
           //add new graphic in its place
-          var clickedPms = new PictureMarkerSymbol("img/pin_selected-blue.png", 18, 25);
+          var clickedPms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/master/pin_selected-blue.png", 18, 25);
           var clickedGraphic = new Graphic(new Point(clickedPoint.geometry.x, clickedPoint.geometry.y), clickedPms);
           clickedGraphic.attributes = evt.graphic;
           $scope.map.graphics.add(clickedGraphic);
@@ -122,7 +123,6 @@
     $scope.closeDetails = closeDetails;
     $scope.map = crfMapService.attributes;
     $scope.provider = provider;
-    $scope.travelRadius = travelRadius;
     
     function centerMap(address) {
       
@@ -190,11 +190,6 @@
       };      
       $scope.callback()(requestedData);        
     }
-    
-    function travelRadius(member) {
-      centerMap(member.needs[0].addresses[0]);
-      crfMapService.travelRadius(member, $scope.map);
-    }
   }
   
   crfMapService.$inject = ["$compile", "$document", "$http", "$q", "$rootScope"];
@@ -213,20 +208,10 @@
       resourcesOptions: {
         id: "resources",
         outFields: ["*"]
-      },      
-      travelRadiusOptions: {
-        id: "travelRadius",
-        address: "13625 Technology Dr, Eden Prairie, MN 55346",
-        lastTravelType: undefined,
-        lastTravelMinutes: undefined,
-        visible: false
-      }      
+      }    
     };
     self.geocode = geocode;
-    self.getMap = getMap;
     self.getProviders = getProviders;
-    self.loadTravelRadius = loadTravelRadius;
-    self.travelRadius = travelRadius;
     
     /**
      * Geocode address.
@@ -269,15 +254,7 @@
       });
       
       return deferred.promise;
-    }
-    
-    /**
-     * Return the deferred map.
-     */
-    function getMap() {
-      console.log("self.attributes.id", self.attributes.id);
-      return esriRegistry.get(self.attributes.id);
-    }    
+    } 
     
     function getProviders(details) {
       var objectIds;
@@ -321,143 +298,6 @@
       function fail(response) {
         return response.data;
       }
-    }
-    
-    /**
-     * Populate the travel radius graphics layer.
-     */
-    function loadTravelRadius(travelType, minutes, address) {
-      console.log("loadTravelRadius", travelType, minutes, address);
-      var deferred = $q.defer();
-      
-      if (!address || address === "") {
-        address = self.attributes.travelRadiusOptions.address;
-      }
-      
-      if (!minutes) {
-        minutes = self.attributes.travelRadiusOptions.lastTravelMinutes;
-      }
-      
-      if (minutes === 0) {
-        deferred.resolve();
-        return;
-      }
-      
-      if (travelType === "walk") {
-        minutes = minutes / 7;
-      }
-      
-      if (!travelType) {
-        travelType = self.attributes.travelRadiusOptions.lastTravelType;
-      }
-      
-      self.getMap().then(function(map) {
-        esriLoader.require(["esri/Color", "esri/tasks/FeatureSet", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleLineSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/tasks/ServiceAreaParameters", "esri/tasks/ServiceAreaTask"],
-        function(Color, FeatureSet, Graphic, SimpleFillSymbol, SimpleLineSymbol, SimpleMarkerSymbol, ServiceAreaParameters, ServiceAreaTask) {
-          var travelRadiusLayer = map.getLayer(self.attributes.travelRadiusOptions.id);
-          
-          if (!travelRadiusLayer) {
-            deferred.resolve();
-            return;
-          }
-          
-          self.geocode(address).then(geocodeSuccess, geocodeFail);
-          
-          function geocodeSuccess(res) {
-            self.attributes.travelRadiusOptions.lastTravelType = travelType;
-            self.attributes.travelRadiusOptions.lastTravelMinutes = minutes;
-            self.attributes.travelRadiusOptions.address = res.address;
-            
-            var pointSymbol = new SimpleMarkerSymbol("diamond", 20,
-              new SimpleLineSymbol("solid", new Color([88, 116, 152]), 2),
-              new Color([88, 116, 152, 0.45])
-            );
-            var location = new Graphic(res.point, pointSymbol);
-
-            var features = [];
-            features.push(location);
-
-            var facilities = new FeatureSet();
-            facilities.features = features;
-            
-            var serviceAreaParams = new ServiceAreaParameters();
-            serviceAreaParams.outSpatialReference = map.spatialReference;
-            serviceAreaParams.defaultBreaks = [minutes];
-            serviceAreaParams.returnFacilities = false;
-            serviceAreaParams.facilities = facilities;
-            
-            var serviceAreaTask = new ServiceAreaTask("https://healthstate.optum.com/arcgis/rest/services/Routing/ServiceAreas/NAServer/GenerateServiceAreas");
-            
-            serviceAreaTask.solve(serviceAreaParams, function(solveResult) {
-              var polygonSymbol = new SimpleFillSymbol(
-                "solid"
-                , new SimpleLineSymbol("solid", new Color([232, 104, 80]), 2)
-                , new Color([232, 104, 80, 0.25])
-              );
-              solveResult.serviceAreaPolygons.forEach(function(serviceArea) {
-                serviceArea.setSymbol(polygonSymbol);
-                travelRadiusLayer.clear();
-                travelRadiusLayer.add(serviceArea);
-                travelRadiusLayer.add(location);
-              });
-              
-              map.centerAt(res.point);
-              deferred.resolve();
-            });
-          }
-          
-          function geocodeFail() {
-            deferred.reject();
-            return;
-          }
-        });
-      });
-      
-      return deferred.promise;
-    }    
-    
-    function travelRadius(member, map) {
-      require(["esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/Color", 
-      "esri/geometry/Point", "esri/graphic", "esri/tasks/FeatureSet", "esri/tasks/ServiceAreaParameters", "esri/tasks/ServiceAreaTask", "esri/symbols/SimpleFillSymbol", "esri/layers/FeatureLayer"],
-      function(SimpleMarkerSymbol, SimpleLineSymbol, Color, Point, Graphic, FeatureSet, ServiceAreaParameters, ServiceAreaTask, SimpleFillSymbol, FeatureLayer) {
-        var pointSymbol = new SimpleMarkerSymbol("diamond", 20,
-          new SimpleLineSymbol("solid", new Color([88, 116, 152]), 2),
-          new Color([88, 116, 152, 0.45])
-        );
-        
-        var location = new Graphic(member.point, pointSymbol);
-        map.graphics.add(location);
-        
-        var features = [];
-        features.push(location);
-        
-        var facilities = new FeatureSet();
-        facilities.features = features;
-        
-        var serviceAreaParams = new ServiceAreaParameters();
-        serviceAreaParams.outSpatialReference = map.spatialReference;          
-        serviceAreaParams.defaultBreaks= [10];
-        serviceAreaParams.returnFacilities = false;
-        serviceAreaParams.facilities = facilities;
-
-        var serviceAreaTask = new ServiceAreaTask("https://healthstate.optum.com/arcgis/rest/services/Routing/ServiceAreas/NAServer/GenerateServiceAreas");
-
-        //solve 
-        serviceAreaTask.solve(serviceAreaParams, function(solveResult){
-          var polygonSymbol = new SimpleFillSymbol(
-            "solid",  
-            new SimpleLineSymbol("solid", new Color([232, 104, 80]), 2),
-            new Color([232, 104, 80, 0.25])
-          );
-          solveResult.serviceAreaPolygons.forEach(function(serviceArea){
-            serviceArea.setSymbol(polygonSymbol);
-            console.log("map", map);
-            map.graphics.add(serviceArea);
-          });
-          
-        }, function(err){
-        });
-      });
     }
   }  
 })();
