@@ -50,7 +50,7 @@
             require(["esri/graphic", "esri/symbols/PictureMarkerSymbol", "esri/geometry/Point"],
             function(Graphic, PictureMarkerSymbol, Point) {
               $scope.map.graphics.clear();
-              var pms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/master/pin_default.png", 18, 25);
+              var pms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/feature/pin_default.png", 18, 25);
               providerData.forEach(function(provider) {
                 var graphic = new Graphic(new Point(provider.geometry.x, provider.geometry.y), pms);
                 graphic.attributes = provider;
@@ -74,9 +74,9 @@
           
           var lastPoint = $scope.map.graphics.graphics[$scope.map.graphics.graphics.length - 1];
           var clickedPoint = evt.graphic;
-          if (lastPoint.symbol.url == "https://rawgit.com/savtwo/esri-map/master/pin_selected-blue.png") {
+          if (lastPoint.symbol.url == "https://rawgit.com/savtwo/esri-map/feature/pin_selected-blue.png") {
             //replace old graphic with original image
-            var oldPms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/master/pin_default.png", 18, 25);
+            var oldPms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/feature/pin_default.png", 18, 25);
             var oldGraphic = new Graphic(new Point(lastPoint.geometry.x, lastPoint.geometry.y), oldPms);
             oldGraphic.attributes = lastPoint.attributes.attributes;
             $scope.map.graphics.add(oldGraphic);
@@ -86,7 +86,7 @@
           }
           
           //add new graphic in its place
-          var clickedPms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/master/pin_selected-blue.png", 18, 25);
+          var clickedPms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/feature/pin_selected-blue.png", 18, 25);
           var clickedGraphic = new Graphic(new Point(clickedPoint.geometry.x, clickedPoint.geometry.y), clickedPms);
           clickedGraphic.attributes = evt.graphic;
           $scope.map.graphics.add(clickedGraphic);
