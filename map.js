@@ -58,7 +58,7 @@
           require(["esri/graphic", "esri/symbols/PictureMarkerSymbol", "esri/geometry/Point", "esri/tasks/FeatureSet", 
           "esri/layers/FeatureLayer", "esri/renderers/SimpleRenderer"], 
           function(Graphic, PictureMarkerSymbol, Point, FeatureSet, FeatureLayer, SimpleFillSymbol, Color, SimpleRenderer) {
-            if ($scope.map) {
+            if ($scope.map.grahpics) {
               $scope.map.graphics.clear();
               $scope.featureLayer.setDefinitionExpression(defExp);
             }
