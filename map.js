@@ -1,10 +1,10 @@
 (function() {
   "use strict";
   
-  angular.module("IE.crfMap", [])
   /**
    * Create directive called "crfMap" that is applied to module called "IE.index"
    */
+  angular.module("IE.crfMap", [])
   .directive("crfMap", crfMap)
   .controller("crfMapCtrl", crfMapCtrl)
   .service("crfMapService", crfMapService);
@@ -15,9 +15,9 @@
     return {
       restrict: "E",
       scope: {
-        member: "=", // two way string binding
+        member: "=",
         crfProvider: "=",
-        callback: "&" // callback function
+        callback: "&"
       },
       template: 
         "<div id='container'>" +
@@ -38,7 +38,7 @@
           "</div>" +
         "</div>",
       controller: "crfMapCtrl",
-      controllerAs: "c", // alias for ctrl() used in the template html
+      controllerAs: "c",
       link: postLink
     };
     
@@ -46,22 +46,27 @@
       $scope.$watchGroup(["crfProvider", "member"], function(newVal, oldVal) {
         var newMember = $scope.member;
         var newProvider = $scope.crfProvider;
+        
         if (newMember && !newProvider) {
           var defExp = crfMapService.getProviders(newMember.needs[0].details);
-          createFeatureLayer(defExp);
-          $scope.show = false;
+
           $scope.centerMap(newMember.needs[0].addresses[0]);
+          $scope.show = false;
+
+          createFeatureLayer(defExp);
         }
         
         if (newProvider) {
+          var address = newProvider.ADR_LN_1_TXT + ", " + newProvider.CTY_NM + ", " + newProvider.ST + " " + newProvider.ZIP;
           var defExp = crfMapService.getProviders(newMember.needs[0].details);
-          createFeatureLayer(defExp);
-          crfMapService.getProviderById(newProvider).then(function(response) {
-            newProvider.geometry = response.features[0].geometry;
-            $scope.attrs = response.features[0].attributes;
-            
+          $scope.centerMap(address);
+          $scope.show = true;
 
+          crfMapService.getProviderById(newProvider).then(function(response) {
             var layer = $scope.map.getLayer("resources");
+            $scope.attrs = response.features[0].attributes;
+            newProvider.geometry = response.features[0].geometry;
+
             require(["esri/tasks/query"], function(Query) {
               var query = new Query();
               query.objectIds = [newProvider.id];
@@ -82,14 +87,13 @@
               });
             });
           });
-          $scope.show = true;
-          var address = newProvider.ADR_LN_1_TXT + ", " + newProvider.CTY_NM + ", " + newProvider.ST + " " + newProvider.ZIP;
-          $scope.centerMap(address);          
+          
+          createFeatureLayer(defExp);
         }
         
         if (newProvider && newMember.provider == null) {
-          $scope.show = false;
           $scope.centerMap(newMember.needs[0].addresses[0]);
+          $scope.show = false;
         }
       });
 
@@ -165,8 +169,6 @@
   crfMapCtrl.$inject = ["$scope", "$timeout", "crfMapService"];
   /* @ngInject */
   function crfMapCtrl($scope, $timeout, crfMapService) {
-    // var self = this;
-    
     $scope.centerMap = centerMap;
     $scope.closeDetails = closeDetails;
     $scope.map = crfMapService.attributes;
@@ -175,7 +177,6 @@
     $scope.travelRadius = travelRadius;
     
     function centerMap(address) {
-      
       var memberPoint = crfMapService.geocode(address).then(success, fail);
       
       function center(pt) {
@@ -203,14 +204,13 @@
         needs: [
           {
             clientId: $scope.member.needs[0].clientId,
-            // name: $scope.member.needs[0].name,
             firstName: $scope.member.needs[0].firstName,
             lastName: $scope.member.needs[0].lastName,
             addresses: $scope.member.needs[0].addresses,
             details: [
               {
                 detailId: $scope.member.needs[0].details[0].detailId,
-                program: $scope.member.needs[0].details[0].filter, //todo: filter or program?
+                program: $scope.member.needs[0].details[0].filter,
                 provider: {
                   id: provider.OBJECTID,
                   name: provider.Name,
@@ -263,20 +263,11 @@
       resourcesOptions: {
         id: "resources",
         outFields: ["*"]
-      },      
-      travelRadiusOptions: {
-        id: "travelRadius",
-        address: "13625 Technology Dr, Eden Prairie, MN 55346",
-        lastTravelType: undefined,
-        lastTravelMinutes: undefined,
-        visible: false
-      }      
+      }    
     };
     self.geocode = geocode;
-    self.getMap = getMap;
     self.getProviderById = getProviderById;
     self.getProviders = getProviders;
-    // self.mapData = mapData;
     
     /**
      * Geocode address.
@@ -321,14 +312,6 @@
       return deferred.promise;
     }
     
-    /**
-     * Return the deferred map.
-     */
-    function getMap() {
-      console.log("self.attributes.id", self.attributes.id);
-      return esriRegistry.get(self.attributes.id);
-    }
-    
     function getProviderById(provider) {
       var qs = {
         where: "1=1",
@@ -348,7 +331,6 @@
       return $http.get("https://map-stg.optum.com/arcgis/rest/services/Projects/OCRF_ResourceLocations/MapServer/0/query", { params: qs }).then(success, fail);
       
       function success(response) {
-        console.log("response.data", response.data);
         return response.data;
       }
       
