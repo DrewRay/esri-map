@@ -75,15 +75,12 @@ Add the following to your header:
     }
   ]
 }
-
 ```
+
 #### crf-provider
 > Watcher for clicking on the provider name and showing in the map directive
-
 ```
-
 $scope.crfProvider = member.provider;
-
 ```
 
 #### callback
@@ -152,5 +149,4 @@ $scope.crfProvider = member.provider;
     }
   ]
 }
-
 ```
