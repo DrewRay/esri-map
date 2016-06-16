@@ -1,0 +1,41 @@
+#container {
+  position: relative;
+  width: 500px; /* needs to come from scope property */
+  height: 500px; /* needs to come from scope property */
+}
+
+#map {
+  width: inherit;
+  height: inherit;
+}
+
+#listview {
+  position: absolute;
+  background: white;
+  opacity: .9;
+  bottom: 0;
+  z-index: 1000;
+  padding: 10px;
+  width: inherit;
+  box-sizing: border-box;
+  font-size: 12px;
+}
+
+.listview-name {
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.listview-header {
+  border-bottom: 3px solid #e87825;
+}
+
+.cux-icon-close {
+  float: right;
+  cursor: pointer;
+}
+
+/* Popup override */
+.esriPopup {
+  visibility: hidden !important;
+}

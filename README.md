@@ -1,25 +1,28 @@
-CRF Map Directive POC
+crfMap Directive
 =====================
 
 This project is built using:
 
 * AngularJS
-* jquery
 * ArcGIS
+* jQuery
+* OUI/UITK
 
 ### SETUP
 
-This project is dependent on AngularJS, jquery, and ArcGIS. Add the following to your header:
+Add the following to your header:
 
 ```
-<link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
+<script src="https://rawgit.com/savtwo/esri-map/test/map.js"></script>
 <script src="https://js.arcgis.com/3.16/"></script>
-<script src="https://rawgit.com/savtwo/esri-map/master/map.directive.js"></script>
+
+<link rel="stylesheet" href="https://rawgit.com/savtwo/esri-map/test/map.css">
+<link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
 ```
 
 ### Including in HTML
 
-`<crf-map member="" callback=""></crf-map>`
+`<crf-map member="" crf-provider="" callback=""></crf-map>`
 
 ### Directive Properties
 
@@ -29,35 +32,55 @@ This project is dependent on AngularJS, jquery, and ArcGIS. Add the following to
 > ***Example Structure:*** 
 ```
 {
-  transactionId: 123,
+  transactionId: 999,
   needs: [
     {
-      clientId: 12345,
-      name: "Jane Doe",
+      clientId: 98765,
+      firstName: "Michael",
+      lastName: "Doe",
       addresses: [
         {
           addressId: 1,
           name: "Home",
-          street : "225 W College Ave",
-          city: "St. Peter",
-          state: "MN",
-          zip: "56082",
-          latitude: 44.318807, // geocoded by another service
-          longitude: -93.963605, // geocoded by another service
+          address: "2100 Bloomington Ave S, Minneapolis, MN 55404",
+          ADR_LN_1_TXT: "2100 Bloomington Ave S",
+          ADR_LN_2_TXT: null,
+          CTY_NM: "Minneapolis",
+          ST: "MN",
+          ZIP: "55404",
+          ZIP_EXT: null
         },
-        {...} // if needed
+        {
+          addressId: 2,
+          name: "Work",
+          address: "13625 Technology Dr, Eden Prairie, MN 55346",
+          ADR_LN_1_TXT: "13625 Technology Dr",
+          ADR_LN_2_TXT: null,
+          CTY_NM: "Eden Prairie",
+          ST: "MN",
+          ZIP: "55346",
+          ZIP_EXT: null
+        }
       ],
       details: [
         {
           detailId: "000009",
-          program: "TEST",
-          filter: "TEST1",
-          subsidized: "100%"
+          program: "Medical",
+          filter: "Medical",
+          subsidized: "100%",
+          providerId: null, //(optional - Added For View Map Purpose.)
+          allowUpdate: true //(Added  for updating provider details)              
         }
       ]
     }
   ]
 }
+```
+
+#### crf-provider
+> Watcher for clicking on the provider name and showing in the map directive
+```
+$scope.crfProvider = member.provider;
 ```
 
 #### callback
@@ -66,33 +89,61 @@ This project is dependent on AngularJS, jquery, and ArcGIS. Add the following to
 > ***Example Structure:*** 
 ```
 {
-  transactionId: 123,
-  needs: [
+  "transactionId": 999,
+  "needs": [
     {
-      clientId: 12345,
-      name: "Jane Doe",
-      addresses: [{...}, {...}],
-      details: [
+      "clientId": 98765,
+      "firstName": "Michael",
+      "lastName": "Doe",
+      "addresses": [
         {
-          detailId: "000009",
-          program: "TEST",
-          provider: [
-            {
-              id: 1234,
-              name: "The Well Clinic",
-              street: "1111 One Street",
-              city: "Eden Prairie",
-              state: "MN",
-              zip: "55346",
-              phone: "952-111-1111",
-              website: "www.thewellclinic.com",
-              geometry: {
-                y: -122.38,
-                x: 37.75
-              }
-            },
-            {...}
-          ]
+          "addressId": 1,
+          "name": "Home",
+          "address": "2100 Bloomington Ave S, Minneapolis, MN 55404",
+          "ADR_LN_1_TXT": "2100 Bloomington Ave S",
+          "ADR_LN_2_TXT": null,
+          "CTY_NM": "Minneapolis",
+          "ST": "MN",
+          "ZIP": "55404",
+          "ZIP_EXT": null
+        },
+        {
+          "addressId": 2,
+          "name": "Work",
+          "address": "13625 Technology Dr, Eden Prairie, MN 55346",
+          "ADR_LN_1_TXT": "13625 Technology Dr",
+          "ADR_LN_2_TXT": null,
+          "CTY_NM": "Eden Prairie",
+          "ST": "MN",
+          "ZIP": "55346",
+          "ZIP_EXT": null
+        }
+      ],
+      "details": [
+        {
+          "detailId": "000009",
+          "program": "Medical",
+          "provider": {
+            "id": 1230,
+            "name": "Gold Star Taxi",
+            "address": "5111 3rd Ave St NE,Minneapolis,MN,55421",
+            "ADR_ID": "ADR_ID_TEST",
+            "ADR_LN_1_TXT": "5111 3rd Ave St NE",
+            "ADR_LN_2_TXT": "ADR_LN_2_TXT_TEST",
+            "CTY_NM": "Minneapolis",
+            "ST": "MN",
+            "ZIP": "55421",
+            "ZIP_EXT": "ZIP_EXT",
+            "FGN_PRVC_NM": "FGN_PRVC_NM",
+            "FGN_PST_CD": "FGN_PST_CD",
+            "CNTY": "CNTRY",
+            "ADR_TYP_CD": "ADR_TYP_CD",
+            "IN_JAIL_OR_INST_BY_THS_ST": "IN_JAIL_OR_INST_BY_THS_ST",
+            "ADR_SPEC_CD": "ADR_SPEC_CD",
+            "JAIL_OR_INST_ADR_FLG": "JAIL_OR_INST_ADR_FLG",
+            "phone": "763-549-9999",
+            "website": "http://www.goldstartaxiservice.com/"
+          }
         }
       ]
     }
