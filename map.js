@@ -1,7 +1,7 @@
 (function() {
   "use strict";
   
-  angular.module("IE.crfMap")
+  angular.module("IE.crfMap", [])
   /**
    * Create directive called "crfMap" that is applied to module called "IE.index"
    */
