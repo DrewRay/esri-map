@@ -22,7 +22,6 @@
       template: 
         "<div id='container'>" +
           "<div id='map'></div>" +
-          // "<img id='travel' src='img/radius_pin_small.png' ng-click='travelRadius(member)'>" +
           "<div id='listview' ng-if='show'>" +
             "<div class='listview-header'>" +
               "<span class='listview-name'>{{attrs.Name}}</span><span ng-click='closeDetails(false)' class='cux-icon-close'></span>" +
@@ -37,9 +36,6 @@
             "Tags: {{attrs.SearchTags}}<br/><br/>" +
             "<button ng-click='provider(attrs)'>Select Provider</button>" +
           "</div>" +
-          // "<h6>Selecting for: {{member.needs[0].firstName}} {{member.needs[0].lastName}}</h6>" +
-          // "<h6>crfProvider: {{crfProvider}}</h6>" +
-          // "<h6>attrs: {{attrs}}</h6>" +
         "</div>",
       controller: "crfMapCtrl",
       controllerAs: "c", // alias for ctrl() used in the template html
@@ -48,63 +44,65 @@
     
     function postLink($scope, ele, attrs, ctrl) {
       $scope.$watchGroup(["crfProvider", "member"], function(newVal, oldVal) {
-        $scope.show = false;
         var newMember = $scope.member;
         var newProvider = $scope.crfProvider;
-        if (newMember) {
-          // console.log("member has changed.", newMember);
-          // $scope.show = false;
+        if (newMember && !newProvider) {
           var defExp = crfMapService.getProviders(newMember.needs[0].details);
-          require(["esri/graphic", "esri/symbols/PictureMarkerSymbol", "esri/geometry/Point", "esri/tasks/FeatureSet", 
-          "esri/layers/FeatureLayer", "esri/renderers/SimpleRenderer"], 
-          function(Graphic, PictureMarkerSymbol, Point, FeatureSet, FeatureLayer, SimpleFillSymbol, Color, SimpleRenderer) {
-            if ($scope.map.graphics) {
-              $scope.map.graphics.clear();
-              $scope.featureLayer.setDefinitionExpression(defExp);
-            }
-          });
+          createFeatureLayer(defExp);
+          $scope.show = false;
+          $scope.centerMap(newMember.needs[0].addresses[0]);
         }
         
         if (newProvider) {
-          // //add to graphics layer
-          // $scope.map.on("layer-reorder", function(evt) {
-          //   if (!evt.graphic) {
-          //     return;
-          //   }
-            
-            
-          // });
-          
-
-          
+          var defExp = crfMapService.getProviders(newMember.needs[0].details);
+          createFeatureLayer(defExp);
           crfMapService.getProviderById(newProvider).then(function(response) {
-            // console.log("res", response);
             newProvider.geometry = response.features[0].geometry;
             $scope.attrs = response.features[0].attributes;
-            $scope.show = true;
+            
 
-            // $scope.map.graphics.clear();
-            // require(["esri/graphic", "esri/symbols/PictureMarkerSymbol", "esri/geometry/Point"],
-            // function(Graphic, PictureMarkerSymbol, Point) {
-            //   console.log("newProvider", newProvider);
-            //   var pms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/feature/pin_selected-blue.png", 18, 25);
-            //   var graphic = new Graphic(new Point(newProvider.geometry.x, newProvider.geometry.y), pms);
-            //   graphic.attributes = newProvider;
-            //   $scope.map.graphics.add(graphic);
-            // });
+            var layer = $scope.map.getLayer("resources");
+            require(["esri/tasks/query"], function(Query) {
+              var query = new Query();
+              query.objectIds = [newProvider.id];
+              query.outFields = ["*"];
+
+              layer.queryFeatures(query, function(results) {
+                var res = results.features[0];
+
+                if (!res) {
+                  return;
+                }
+
+                if (res.geometry.x == "NaN" || res.geometry.y == "NaN") {
+                  return;
+                }
+
+                showBack($scope.map, res);
+              });
+            });
           });
-          
-    
+          $scope.show = true;
+          var address = newProvider.ADR_LN_1_TXT + ", " + newProvider.CTY_NM + ", " + newProvider.ST + " " + newProvider.ZIP;
+          $scope.centerMap(address);          
         }
         
-        if (newProvider && newMember) {
-          var address = newProvider.ADR_LN_1_TXT + ", " + newProvider.CTY_NM + ", " + newProvider.ST + " " + newProvider.ZIP;
-          $scope.centerMap(address);
-        }
-        if (!newProvider && newMember) {
+        if (newProvider && newMember.provider == null) {
+          $scope.show = false;
           $scope.centerMap(newMember.needs[0].addresses[0]);
         }
       });
+
+      function createFeatureLayer(defExp) {
+        require(["esri/graphic", "esri/symbols/PictureMarkerSymbol", "esri/geometry/Point", "esri/tasks/FeatureSet", 
+        "esri/layers/FeatureLayer", "esri/renderers/SimpleRenderer"], 
+        function(Graphic, PictureMarkerSymbol, Point, FeatureSet, FeatureLayer, SimpleFillSymbol, Color, SimpleRenderer) {
+          if ($scope.map.graphics) {
+            $scope.map.graphics.clear();
+            $scope.featureLayer.setDefinitionExpression(defExp);
+          }
+        });
+      }
       
       require(["esri/map", "esri/layers/FeatureLayer", "esri/symbols/SimpleFillSymbol", "esri/Color", "esri/renderers/SimpleRenderer", "esri/symbols/PictureMarkerSymbol", "esri/InfoTemplate", "esri/graphic", "esri/geometry/Point"], 
       function getMap(Map, FeatureLayer, SimpleFillSymbol, Color, SimpleRenderer, PictureMarkerSymbol, InfoTemplate, Graphic, Point) {
@@ -116,7 +114,7 @@
           outFields: ["*"]
         });
         
-        var pms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/feature/pin_default.png", 18, 25);
+        var pms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/master/pin_default.png", 18, 25);
         var renderer = new SimpleRenderer(pms);
         $scope.featureLayer.setSelectionSymbol(pms);
         $scope.featureLayer.setRenderer(renderer);
@@ -126,28 +124,41 @@
           if (!evt.graphic) {
             return;
           }
-          
-          showDetails(evt.graphic.attributes, true);
-        });      
-        
-        function showDetails(attrs, show) {
-          // console.log("showDetails", attrs);
-          var scope = $rootScope.$new(true);
-          scope.selectProvider = selectProvider;
-          scope.showDetails = showDetails;
-          
-          $scope.attrs = attrs;
-          $scope.show = show;
-          
-          if(!$rootScope.$$phase) {
-            $rootScope.$digest();
-          }
-          
-          function selectProvider(provider) {
-            $scope.provider(provider);
-          }
-        }
+
+          showDetails(evt.graphic, true);
+        });
       });
+
+      function showBack(map, feature) {
+        var $scope = $rootScope.$new(true);
+        
+        var el = $compile()($scope);
+        map.infoWindow.setFeatures([feature]);
+        map.infoWindow.show(feature.geometry);
+
+        var contentPane = $document.find(".esriPopup .contentPane");
+        var contentElement = angular.element(contentPane);
+
+        contentElement.html("");
+        contentElement.append(el);
+      }      
+
+      function showDetails(feature, show) {
+        var scope = $rootScope.$new(true);
+        scope.selectProvider = selectProvider;
+        scope.showDetails = showDetails;
+        
+        $scope.attrs = feature.attributes;
+        $scope.show = show;
+        
+        if(!$rootScope.$$phase) {
+          $rootScope.$digest();
+        }
+        
+        function selectProvider(provider) {
+          $scope.provider(provider);
+        }
+      }
     }
   }
   
