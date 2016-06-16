@@ -18,6 +18,8 @@ Add the following to your header:
 
 <link rel="stylesheet" href="https://rawgit.com/savtwo/esri-map/test/map.css">
 <link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
+
+Also, add "IE.crfMap" to your app.module.
 ```
 
 ### Including in HTML
