@@ -80,7 +80,6 @@ Add the following to your header:
 #### crf-provider
 > Watcher for clicking on the provider name and showing in the map directive
 
-> ***Example Structure:***
 ```
 
 $scope.crfProvider = member.provider;
