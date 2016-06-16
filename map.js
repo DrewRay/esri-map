@@ -16,11 +16,13 @@
       restrict: "E",
       scope: {
         member: "=", // two way string binding
+        crfProvider: "=",
         callback: "&" // callback function
       },
       template: 
         "<div id='container'>" +
           "<div id='map'></div>" +
+          // "<img id='travel' src='img/radius_pin_small.png' ng-click='travelRadius(member)'>" +
           "<div id='listview' ng-if='show'>" +
             "<div class='listview-header'>" +
               "<span class='listview-name'>{{attrs.Name}}</span><span ng-click='closeDetails(false)' class='cux-icon-close'></span>" +
@@ -35,6 +37,9 @@
             "Tags: {{attrs.SearchTags}}<br/><br/>" +
             "<button ng-click='provider(attrs)'>Select Provider</button>" +
           "</div>" +
+          // "<h6>Selecting for: {{member.needs[0].firstName}} {{member.needs[0].lastName}}</h6>" +
+          // "<h6>crfProvider: {{crfProvider}}</h6>" +
+          // "<h6>attrs: {{attrs}}</h6>" +
         "</div>",
       controller: "crfMapCtrl",
       controllerAs: "c", // alias for ctrl() used in the template html
@@ -42,64 +47,94 @@
     };
     
     function postLink($scope, ele, attrs, ctrl) {
-      $scope.$watch("member", function(newVal, oldVal) {
-        if ($scope.member) {
-          $scope.show = false;
-          crfMapService.getProviders($scope.member.needs[0].details).then(function(response) {
-            var providerData = response.features;          
-            require(["esri/graphic", "esri/symbols/PictureMarkerSymbol", "esri/geometry/Point"],
-            function(Graphic, PictureMarkerSymbol, Point) {
-              $scope.map.graphics.clear();
-              var pms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/feature/pin_default.png", 18, 25);
-              providerData.forEach(function(provider) {
-                var graphic = new Graphic(new Point(provider.geometry.x, provider.geometry.y), pms);
-                graphic.attributes = provider;
-                $scope.map.graphics.add(graphic);
-              });
-            });
+      $scope.$watchGroup(["crfProvider", "member"], function(newVal, oldVal) {
+        $scope.show = false;
+        var newMember = $scope.member;
+        var newProvider = $scope.crfProvider;
+        if (newMember) {
+          // console.log("member has changed.", newMember);
+          // $scope.show = false;
+          var defExp = crfMapService.getProviders(newMember.needs[0].details);
+          require(["esri/graphic", "esri/symbols/PictureMarkerSymbol", "esri/geometry/Point", "esri/tasks/FeatureSet", 
+          "esri/layers/FeatureLayer", "esri/renderers/SimpleRenderer"], 
+          function(Graphic, PictureMarkerSymbol, Point, FeatureSet, FeatureLayer, SimpleFillSymbol, Color, SimpleRenderer) {
+            $scope.map.graphics.clear();
+            $scope.featureLayer.setDefinitionExpression(defExp);
           });
-          $scope.centerMap($scope.member.needs[0].addresses[0]);
+        }
+        
+        if (newProvider) {
+          // //add to graphics layer
+          // $scope.map.on("layer-reorder", function(evt) {
+          //   if (!evt.graphic) {
+          //     return;
+          //   }
+            
+            
+          // });
+          
+
+          
+          crfMapService.getProviderById(newProvider).then(function(response) {
+            // console.log("res", response);
+            newProvider.geometry = response.features[0].geometry;
+            $scope.attrs = response.features[0].attributes;
+            $scope.show = true;
+
+            // $scope.map.graphics.clear();
+            // require(["esri/graphic", "esri/symbols/PictureMarkerSymbol", "esri/geometry/Point"],
+            // function(Graphic, PictureMarkerSymbol, Point) {
+            //   console.log("newProvider", newProvider);
+            //   var pms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/feature/pin_selected-blue.png", 18, 25);
+            //   var graphic = new Graphic(new Point(newProvider.geometry.x, newProvider.geometry.y), pms);
+            //   graphic.attributes = newProvider;
+            //   $scope.map.graphics.add(graphic);
+            // });
+          });
+          
+    
+        }
+        
+        if (newProvider && newMember) {
+          var address = newProvider.ADR_LN_1_TXT + ", " + newProvider.CTY_NM + ", " + newProvider.ST + " " + newProvider.ZIP;
+          $scope.centerMap(address);
+        }
+        if (!newProvider && newMember) {
+          $scope.centerMap(newMember.needs[0].addresses[0]);
         }
       });
-        
-      require(["esri/map", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/Color", 
-      "esri/geometry/Point", "esri/graphic", "esri/tasks/FeatureSet", "esri/tasks/ServiceAreaParameters", 
-      "esri/tasks/ServiceAreaTask", "esri/symbols/SimpleFillSymbol", "esri/symbols/PictureMarkerSymbol", "esri/layers/FeatureLayer"], 
-      function(Map, SimpleMarkerSymbol, SimpleLineSymbol, Color, Point, Graphic, FeatureSet, ServiceAreaParameters, ServiceAreaTask, SimpleFillSymbol, PictureMarkerSymbol, FeatureLayer) {
+      
+      require(["esri/map", "esri/layers/FeatureLayer", "esri/symbols/SimpleFillSymbol", "esri/Color", "esri/renderers/SimpleRenderer", "esri/symbols/PictureMarkerSymbol", "esri/InfoTemplate", "esri/graphic", "esri/geometry/Point"], 
+      function getMap(Map, FeatureLayer, SimpleFillSymbol, Color, SimpleRenderer, PictureMarkerSymbol, InfoTemplate, Graphic, Point) {
+        var template = new InfoTemplate();
         $scope.map = new Map("map", crfMapService.attributes.options);
+        $scope.featureLayer = new FeatureLayer("https://map-stg.optum.com/arcgis/rest/services/Projects/OCRF_ResourceLocations/MapServer/0", {
+          id: "resources",
+          infoTemplate: template,
+          outFields: ["*"]
+        });
+        
+        var pms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/feature/pin_default.png", 18, 25);
+        var renderer = new SimpleRenderer(pms);
+        $scope.featureLayer.setSelectionSymbol(pms);
+        $scope.featureLayer.setRenderer(renderer);
+        
+        $scope.map.addLayer($scope.featureLayer);
         $scope.map.on("click", function(evt) {
           if (!evt.graphic) {
             return;
           }
           
-          var lastPoint = $scope.map.graphics.graphics[$scope.map.graphics.graphics.length - 1];
-          var clickedPoint = evt.graphic;
-          if (lastPoint.symbol.url == "https://rawgit.com/savtwo/esri-map/feature/pin_selected-blue.png") {
-            //replace old graphic with original image
-            var oldPms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/feature/pin_default.png", 18, 25);
-            var oldGraphic = new Graphic(new Point(lastPoint.geometry.x, lastPoint.geometry.y), oldPms);
-            oldGraphic.attributes = lastPoint.attributes.attributes;
-            $scope.map.graphics.add(oldGraphic);
-            
-            // remove last object in graphis array
-            $scope.map.graphics.remove(lastPoint);
-          }
-          
-          //add new graphic in its place
-          var clickedPms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/feature/pin_selected-blue.png", 18, 25);
-          var clickedGraphic = new Graphic(new Point(clickedPoint.geometry.x, clickedPoint.geometry.y), clickedPms);
-          clickedGraphic.attributes = evt.graphic;
-          $scope.map.graphics.add(clickedGraphic);
-          
-          showDetails([evt.graphic], evt.graphic.attributes, true);
-        });
+          showDetails(evt.graphic.attributes, true);
+        });      
         
-        function showDetails(features, attrs, show) {
+        function showDetails(attrs, show) {
+          // console.log("showDetails", attrs);
           var scope = $rootScope.$new(true);
           scope.selectProvider = selectProvider;
           scope.showDetails = showDetails;
           
-          $scope.attrs = attrs.attributes;
+          $scope.attrs = attrs;
           $scope.show = show;
           
           if(!$rootScope.$$phase) {
@@ -122,7 +157,9 @@
     $scope.centerMap = centerMap;
     $scope.closeDetails = closeDetails;
     $scope.map = crfMapService.attributes;
+    $scope.mapData = crfMapService.mapData;
     $scope.provider = provider;
+    $scope.travelRadius = travelRadius;
     
     function centerMap(address) {
       
@@ -190,6 +227,11 @@
       };      
       $scope.callback()(requestedData);        
     }
+    
+    function travelRadius(member) {
+      centerMap(member.needs[0].addresses[0]);
+      crfMapService.travelRadius(member, $scope.map);
+    }
   }
   
   crfMapService.$inject = ["$compile", "$document", "$http", "$q", "$rootScope"];
@@ -208,10 +250,20 @@
       resourcesOptions: {
         id: "resources",
         outFields: ["*"]
-      }    
+      },      
+      travelRadiusOptions: {
+        id: "travelRadius",
+        address: "13625 Technology Dr, Eden Prairie, MN 55346",
+        lastTravelType: undefined,
+        lastTravelMinutes: undefined,
+        visible: false
+      }      
     };
     self.geocode = geocode;
+    self.getMap = getMap;
+    self.getProviderById = getProviderById;
     self.getProviders = getProviders;
+    // self.mapData = mapData;
     
     /**
      * Geocode address.
@@ -254,29 +306,20 @@
       });
       
       return deferred.promise;
-    } 
+    }
     
-    function getProviders(details) {
-      var objectIds;
-      var serviceType = [];
-      var where;
-      
-      if (details[0].allowUpdate == true) {
-        objectIds = "";
-      } else {
-        objectIds = details[0].providerId;
-      }
-      
-      details.forEach(function(detail) {
-        serviceType.push(detail.filter);
-      });
-      
-      var str = "ServiceType IN ('" + serviceType.join("', '") + "')";
-      where = str;
-
+    /**
+     * Return the deferred map.
+     */
+    function getMap() {
+      console.log("self.attributes.id", self.attributes.id);
+      return esriRegistry.get(self.attributes.id);
+    }
+    
+    function getProviderById(provider) {
       var qs = {
-        where: where,
-        objectIds: objectIds,
+        where: "1=1",
+        objectIds: provider.id,
         outFields: "*",
         returnGeometry: true,
         returnIdsOnly: false,
@@ -292,12 +335,39 @@
       return $http.get("https://map-stg.optum.com/arcgis/rest/services/Projects/OCRF_ResourceLocations/MapServer/0/query", { params: qs }).then(success, fail);
       
       function success(response) {
+        console.log("response.data", response.data);
         return response.data;
       }
       
       function fail(response) {
         return response.data;
+      }      
+    }    
+    
+    function getProviders(details) {
+      var serviceType = [];
+      var qs = {};
+      var defExp;
+      
+      if (details[0].allowUpdate == false) {
+        var str = "ObjectId = " + details[0].providerId;
+        qs.objectIds = str;
       }
+      
+      details.forEach(function(detail) {
+        serviceType.push(detail.filter);
+      });
+      
+      var str = "ServiceType IN ('" + serviceType.join("', '") + "')";
+      qs.where = str;
+      
+      if (qs.objectIds) {
+        defExp = qs.where + " AND " + qs.objectIds;
+      } else {
+        defExp = qs.where;
+      }
+      
+      return defExp;
     }
   }  
 })();
