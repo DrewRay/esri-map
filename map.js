@@ -58,8 +58,10 @@
           require(["esri/graphic", "esri/symbols/PictureMarkerSymbol", "esri/geometry/Point", "esri/tasks/FeatureSet", 
           "esri/layers/FeatureLayer", "esri/renderers/SimpleRenderer"], 
           function(Graphic, PictureMarkerSymbol, Point, FeatureSet, FeatureLayer, SimpleFillSymbol, Color, SimpleRenderer) {
-            $scope.map.graphics.clear();
-            $scope.featureLayer.setDefinitionExpression(defExp);
+            if ($scope.map) {
+              $scope.map.graphics.clear();
+              $scope.featureLayer.setDefinitionExpression(defExp);
+            }
           });
         }
         
