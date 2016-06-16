@@ -34,3 +34,8 @@
   float: right;
   cursor: pointer;
 }
+
+/* Popup override */
+.esriPopup {
+  visibility: hidden !important;
+}
