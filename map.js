@@ -344,7 +344,7 @@
       var qs = {};
       var defExp;
       
-      if (details[0].allowUpdate == false) {
+      if (details[0].allowUpdate == false && details[0].providerId) {
         var str = "ObjectId = " + details[0].providerId;
         qs.objectIds = str;
       }
@@ -364,5 +364,5 @@
       
       return defExp;
     }
-  }  
+  } 
 })();
