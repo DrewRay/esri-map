@@ -13,10 +13,10 @@ This project is built using:
 Add the following to your header:
 
 ```
-<script src="https://rawgit.com/savtwo/esri-map/test/map.js"></script>
+<script src="https://rawgit.com/savtwo/esri-map/{branch}/map.js"></script>
 <script src="https://js.arcgis.com/3.16/"></script>
 
-<link rel="stylesheet" href="https://rawgit.com/savtwo/esri-map/test/map.css">
+<link rel="stylesheet" href="https://rawgit.com/savtwo/esri-map/{branch}/map.css">
 <link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
 
 Also, add "IE.crfMap" to your app.module.
