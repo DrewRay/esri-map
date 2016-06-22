@@ -268,6 +268,7 @@
     self.geocode = geocode;
     self.getProviderById = getProviderById;
     self.getProviders = getProviders;
+    self.mapData = mapData;
     
     /**
      * Geocode address.
@@ -350,12 +351,12 @@
       }
       
       details.forEach(function(detail) {
-        serviceType.push(detail.filter);
+        serviceType.push(mapData(detail.filter));
       });
       
       var str = "ServiceType IN ('" + serviceType.join("', '") + "')";
       qs.where = str;
-      
+
       if (qs.objectIds) {
         defExp = qs.where + " AND " + qs.objectIds;
       } else {
@@ -364,5 +365,25 @@
       
       return defExp;
     }
-  } 
+
+    function mapData(serviceType) {
+      if (serviceType == "CCAP") {
+        return serviceType = "Daycare";
+      }
+
+      if (serviceType == "TANF") {
+        return serviceType = "Employment Assistance";
+      }
+
+      if (serviceType == "LiHEAP") {
+        return serviceType = "Utility Assistance";
+      }
+
+      if (serviceType == "QHP" || serviceType == "CHIP" || serviceType == "Medicaid") {
+        return serviceType = "Medical";
+      }
+
+      return serviceType;
+    }
+  }
 })();
