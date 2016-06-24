@@ -368,11 +368,11 @@
 
     function mapData(serviceType) {
       if (serviceType == "CCAP") {
-        return serviceType = "Daycare";
+        return serviceType = "Child Care";
       }
 
       if (serviceType == "TANF") {
-        return serviceType = "Employment Assistance";
+        return serviceType = "Job Placement Services";
       }
 
       if (serviceType == "LiHEAP") {
