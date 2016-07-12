@@ -371,7 +371,7 @@
         return serviceType = "Child Care";
       }
 
-      if (serviceType == "TANF") {
+      if (serviceType == "TANF" || serviceType == "SNAP") {
         return serviceType = "Job Placement Services";
       }
 
