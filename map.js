@@ -379,7 +379,7 @@
         return serviceType = "Utility Assistance";
       }
 
-      if (serviceType == "QHP" || serviceType == "CHIP" || serviceType == "Medicaid") {
+      if (serviceType == "QHP" || serviceType == "CHIP" || serviceType == "MEDI") {
         return serviceType = "Medical";
       }
 
