@@ -2,7 +2,7 @@
   "use strict";
   
   /**
-   * Create directive called "crfMap" that is applied to module called "IE.index"
+   * Create directive called "crfMap" that is applied to module called "IE.crfMap"
    */
   angular.module("IE.crfMap", [])
   .directive("crfMap", crfMap)
@@ -22,6 +22,7 @@
       template: 
         "<div id='container'>" +
           "<div id='map'></div>" +
+          "<img id='travel' src='https://rawgit.com/savtwo/esri-map/test/radius_pin_small.png' ng-click='loadTravelRadius(map, member)'>" +
           "<div id='listview' ng-if='show'>" +
             "<div class='listview-header'>" +
               "<span class='listview-name'>{{attrs.Name}}</span><span ng-click='closeDetails(false)' class='cux-icon-close'></span>" +
@@ -49,7 +50,6 @@
         
         if (newMember && !newProvider) {
           var defExp = crfMapService.getProviders(newMember.needs[0].details);
-
           $scope.centerMap(newMember.needs[0].addresses[0]);
           $scope.show = false;
 
@@ -103,27 +103,39 @@
         function(Graphic, PictureMarkerSymbol, Point, FeatureSet, FeatureLayer, SimpleFillSymbol, Color, SimpleRenderer) {
           if ($scope.map.graphics) {
             $scope.map.graphics.clear();
-            $scope.featureLayer.setDefinitionExpression(defExp);
+            $scope.map.getLayer("travelRadius").clear();
+            $scope.resourcesLayer.setDefinitionExpression(defExp);
           }
         });
       }
       
-      require(["esri/map", "esri/layers/FeatureLayer", "esri/symbols/SimpleFillSymbol", "esri/Color", "esri/renderers/SimpleRenderer", "esri/symbols/PictureMarkerSymbol", "esri/InfoTemplate", "esri/graphic", "esri/geometry/Point"], 
-      function getMap(Map, FeatureLayer, SimpleFillSymbol, Color, SimpleRenderer, PictureMarkerSymbol, InfoTemplate, Graphic, Point) {
+      require(["esri/map", "esri/layers/FeatureLayer", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/symbols/SimpleFillSymbol", "esri/Color", "esri/renderers/SimpleRenderer", "esri/symbols/PictureMarkerSymbol", "esri/InfoTemplate", "esri/graphic", "esri/geometry/Point", "esri/tasks/FeatureSet", "esri/tasks/ServiceAreaParameters", "esri/tasks/ServiceAreaTask", "esri/layers/GraphicsLayer"], 
+      function getMap(Map, FeatureLayer, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, Color, SimpleRenderer, PictureMarkerSymbol, InfoTemplate, Graphic, Point, FeatureSet, ServiceAreaParameters, ServiceAreaTask, GraphicsLayer) {
         var template = new InfoTemplate();
         $scope.map = new Map("map", crfMapService.attributes.options);
-        $scope.featureLayer = new FeatureLayer("https://map-stg.optum.com/arcgis/rest/services/Projects/OCRF_ResourceLocations/MapServer/0", {
+        
+        // resourcesLayer properties
+        $scope.resourcesLayer = new FeatureLayer("https://map-stg.optum.com/arcgis/rest/services/Projects/OCRF_ResourceLocations/MapServer/0", {
           id: "resources",
           infoTemplate: template,
           outFields: ["*"]
         });
-        
+
         var pms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/master/pin_default.png", 18, 25);
         var renderer = new SimpleRenderer(pms);
-        $scope.featureLayer.setSelectionSymbol(pms);
-        $scope.featureLayer.setRenderer(renderer);
+        $scope.resourcesLayer.setSelectionSymbol(pms);
+        $scope.resourcesLayer.setRenderer(renderer);
+
+        // travelRadiusLayer properties
+        var travelRadiusLayer = new GraphicsLayer({
+          id: "travelRadius",
+          address: "13625 Technology Dr, Eden Prairie, MN 55346"
+        });
+
+        // adding layers to map
+        $scope.map.addLayer($scope.resourcesLayer);
+        $scope.map.addLayer(travelRadiusLayer, 0);
         
-        $scope.map.addLayer($scope.featureLayer);
         $scope.map.on("click", function(evt) {
           if (!evt.graphic) {
             return;
@@ -171,12 +183,13 @@
   function crfMapCtrl($scope, $timeout, crfMapService) {
     $scope.centerMap = centerMap;
     $scope.closeDetails = closeDetails;
+    $scope.loadTravelRadius = crfMapService.loadTravelRadius;
     $scope.map = crfMapService.attributes;
     $scope.mapData = crfMapService.mapData;
     $scope.provider = provider;
-    $scope.travelRadius = travelRadius;
     
     function centerMap(address) {
+      
       var memberPoint = crfMapService.geocode(address).then(success, fail);
       
       function center(pt) {
@@ -196,7 +209,7 @@
     
     function closeDetails(show) {
       $scope.show = show;
-    }   
+    }
     
     function provider(provider) {
       var requestedData = {
@@ -240,11 +253,6 @@
       };      
       $scope.callback()(requestedData);        
     }
-    
-    function travelRadius(member) {
-      centerMap(member.needs[0].addresses[0]);
-      crfMapService.travelRadius(member, $scope.map);
-    }
   }
   
   crfMapService.$inject = ["$compile", "$document", "$http", "$q", "$rootScope"];
@@ -263,12 +271,21 @@
       resourcesOptions: {
         id: "resources",
         outFields: ["*"]
-      }    
+      },      
+      travelRadiusOptions: {
+        id: "travelRadius",
+        address: "13625 Technology Dr, Eden Prairie, MN 55346",
+        lastTravelType: undefined,
+        lastTravelMinutes: undefined,
+        visible: false
+      }      
     };
     self.geocode = geocode;
+    self.getMap = getMap;
     self.getProviderById = getProviderById;
     self.getProviders = getProviders;
-    self.mapData = mapData;
+    self.loadTravelRadius = loadTravelRadius;
+    self.mapLoaded = mapLoaded;
     
     /**
      * Geocode address.
@@ -313,7 +330,14 @@
       return deferred.promise;
     }
     
-    function getProviderById(provider) {
+    /**
+     * Return the deferred map.
+     */
+    function getMap() {
+      return esriRegistry.get(self.attributes.id);
+    }
+    
+        function getProviderById(provider) {
       var qs = {
         where: "1=1",
         objectIds: provider.id,
@@ -338,7 +362,7 @@
       function fail(response) {
         return response.data;
       }      
-    }    
+    }
     
     function getProviders(details) {
       var serviceType = [];
@@ -364,6 +388,97 @@
       }
       
       return defExp;
+    }
+
+    function loadTravelRadius(map, member) {
+      require(["esri/map", "esri/layers/FeatureLayer", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/symbols/SimpleFillSymbol", "esri/Color", "esri/renderers/SimpleRenderer", "esri/symbols/PictureMarkerSymbol", "esri/InfoTemplate", "esri/graphic", "esri/geometry/Point", "esri/tasks/FeatureSet", "esri/tasks/ServiceAreaParameters", "esri/tasks/ServiceAreaTask", "esri/layers/GraphicsLayer"], 
+      function(Map, FeatureLayer, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, Color, SimpleRenderer, PictureMarkerSymbol, InfoTemplate, Graphic, Point, FeatureSet, ServiceAreaParameters, ServiceAreaTask, GraphicsLayer) {
+        var travelRadiusLayer = map.getLayer(self.attributes.travelRadiusOptions.id);
+
+        var pointSymbol = new SimpleMarkerSymbol("diamond", 20,
+          new SimpleLineSymbol("solid", new Color([88, 116, 152]), 2),
+          new Color([88, 116, 152, 0.45])
+        );
+        
+        var location = new Graphic(member.point, pointSymbol);
+        
+        var features = [];
+        features.push(location);
+        
+        var facilities = new FeatureSet();
+        facilities.features = features;
+        
+        var serviceAreaParams = new ServiceAreaParameters();
+        serviceAreaParams.outSpatialReference = map.spatialReference;          
+        serviceAreaParams.defaultBreaks= [10];
+        serviceAreaParams.returnFacilities = false;
+        serviceAreaParams.facilities = facilities;
+
+        var serviceAreaTask = new ServiceAreaTask("https://healthstate.optum.com/arcgis/rest/services/Routing/ServiceAreas/NAServer/GenerateServiceAreas");
+
+        //solve 
+        serviceAreaTask.solve(serviceAreaParams, function(solveResult){
+          var polygonSymbol = new SimpleFillSymbol(
+            "solid",  
+            new SimpleLineSymbol("solid", new Color([232, 104, 80]), 2),
+            new Color([232, 104, 80, 0.25])
+          );
+          
+          solveResult.serviceAreaPolygons.forEach(function(serviceArea){
+            serviceArea.setSymbol(polygonSymbol);
+            travelRadiusLayer.clear();
+            travelRadiusLayer.add(serviceArea);
+            travelRadiusLayer.add(location);
+          });
+          map.addLayer(travelRadiusLayer);
+        }, function(err){
+          console.log(err.message);
+        });
+      });
+    }
+
+    /**
+     * Fire when the resources map is loaded.
+     */
+    function mapLoaded(map) {
+      addTravelLayer();
+      hidePopupOnClick();
+			
+      function addTravelLayer() {
+        esriLoader.require(["esri/layers/GraphicsLayer"], function(GraphicsLayer) {
+          var travelRadiusLayer = new GraphicsLayer({
+            id: self.attributes.travelRadiusOptions.id
+          });
+          
+          $q.all([self.attributes.resourcesDeferred.promise, self.attributes.suggestedDeferred.promise]).then(function() {
+            map.addLayer(travelRadiusLayer, 1);
+            travelRadiusLayer.setVisibility(self.attributes.travelRadiusOptions.visible);
+      
+            travelRadiusLayer.on("click", function(evt) {
+              // travel radius polygon has attributes, but the central point does not.
+              if (evt.graphic.attributes) {
+                map.infoWindow.hide();
+                return;
+              }
+              
+              showAddressPopup(evt.graphic.geometry);
+            });
+          });
+        });
+      }
+			
+      /**
+       * Hide the map's popup window is not clicked on a graphic.
+       */
+      function hidePopupOnClick() {
+        map.on("click", function(evt) {
+          if (evt.graphic) {
+            return;
+          }
+
+          map.infoWindow.hide();
+        });
+      }
     }
 
     function mapData(serviceType) {
