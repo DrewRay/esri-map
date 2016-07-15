@@ -35,6 +35,27 @@
   cursor: pointer;
 }
 
+/* travel radius */
+
+#travel {
+  background-color: white;
+  border-radius: 5px;
+  border: 1px solid #57585A;
+  box-sizing: content-box;
+  overflow: hidden;
+  position: absolute;
+  right: 20px;
+  text-align: right;
+  top: 20px;
+  white-space: nowrap;
+  z-index: 1;
+  max-height: 40px;
+}
+
+#travel:hover {
+  cursor: pointer;
+}
+
 /* Popup override */
 .esriPopup {
   visibility: hidden !important;
