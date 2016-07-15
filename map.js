@@ -22,7 +22,7 @@
       template: 
         "<div id='container'>" +
           "<div id='map'></div>" +
-          "<img id='travel' src='img/radius_pin_small.png' ng-click='loadTravelRadius(map, member)'>" +
+          "<img id='travel' src='https://rawgit.com/savtwo/esri-map/test/radius_pin_small.png' ng-click='loadTravelRadius(map, member)'>" +
           "<div id='listview' ng-if='show'>" +
             "<div class='listview-header'>" +
               "<span class='listview-name'>{{attrs.Name}}</span><span ng-click='closeDetails(false)' class='cux-icon-close'></span>" +
