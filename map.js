@@ -22,7 +22,12 @@
       template: 
         "<div id='container'>" +
           "<div id='map'></div>" +
-          "<img id='travel' src='https://rawgit.com/savtwo/esri-map/master/radius_pin_small.png' ng-click='loadTravelRadius(map, member)'>" +
+          "<div id='travel' ng-class='travelOptions.selected ? \"travel-open\" : \"travel-closed\"' title='20 mins'>" +
+            "<img ng-click='travelOptions.selected = !travelOptions.selected' ng-if='travelOptions.selected == false' src='https://rawgit.com/savtwo/esri-map/master/radius_pin_small.png' width='40' height='40'>" +
+            "<img id='travel-icons' ng-click='loadTravelRadius(map, member, 20, \"drive\")' ng-if='travelOptions.selected == true' src='https://rawgit.com/savtwo/esri-map/master/drive_off.png'>" +
+            "<img id='travel-icons' ng-click='loadTravelRadius(map, member, 20, \"walk\")' ng-if='travelOptions.selected == true' src='https://rawgit.com/savtwo/esri-map/master/walk_off.png' height='32'>" +
+            "<img ng-click='travelOptions.selected = !travelOptions.selected; clearTravelRadius(map)' ng-if='travelOptions.selected == true' src='https://rawgit.com/savtwo/esri-map/master/radius_pin_small.png' width='40' height='40'>" +
+          "</div>" +
           "<div id='listview' ng-if='show'>" +
             "<div class='listview-header'>" +
               "<span class='listview-name'>{{attrs.Name}}</span><span ng-click='closeDetails(false)' class='cux-icon-close'></span>" +
@@ -182,11 +187,15 @@
   /* @ngInject */
   function crfMapCtrl($scope, $timeout, crfMapService) {
     $scope.centerMap = centerMap;
+    $scope.clearTravelRadius = crfMapService.clearTravelRadius;
     $scope.closeDetails = closeDetails;
     $scope.loadTravelRadius = crfMapService.loadTravelRadius;
     $scope.map = crfMapService.attributes;
     $scope.mapData = crfMapService.mapData;
     $scope.provider = provider;
+    $scope.travelOptions = {
+      selected: false
+    };
     
     function centerMap(address) {
       
@@ -280,12 +289,18 @@
         visible: false
       }      
     };
+    self.clearTravelRadius = clearTravelRadius;
     self.geocode = geocode;
     self.getMap = getMap;
     self.getProviderById = getProviderById;
     self.getProviders = getProviders;
     self.loadTravelRadius = loadTravelRadius;
     self.mapLoaded = mapLoaded;
+
+    function clearTravelRadius(map) {
+        var travelRadiusLayer = map.getLayer(self.attributes.travelRadiusOptions.id);
+        travelRadiusLayer.clear();
+    }
     
     /**
      * Geocode address.
@@ -337,7 +352,7 @@
       return esriRegistry.get(self.attributes.id);
     }
     
-        function getProviderById(provider) {
+    function getProviderById(provider) {
       var qs = {
         where: "1=1",
         objectIds: provider.id,
@@ -390,10 +405,14 @@
       return defExp;
     }
 
-    function loadTravelRadius(map, member) {
+    function loadTravelRadius(map, member, minutes, travelType) {
       require(["esri/map", "esri/layers/FeatureLayer", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/symbols/SimpleFillSymbol", "esri/Color", "esri/renderers/SimpleRenderer", "esri/symbols/PictureMarkerSymbol", "esri/InfoTemplate", "esri/graphic", "esri/geometry/Point", "esri/tasks/FeatureSet", "esri/tasks/ServiceAreaParameters", "esri/tasks/ServiceAreaTask", "esri/layers/GraphicsLayer"], 
       function(Map, FeatureLayer, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, Color, SimpleRenderer, PictureMarkerSymbol, InfoTemplate, Graphic, Point, FeatureSet, ServiceAreaParameters, ServiceAreaTask, GraphicsLayer) {
         var travelRadiusLayer = map.getLayer(self.attributes.travelRadiusOptions.id);
+
+        if (travelType == 'walk') {
+          minutes = minutes / 4; 
+        }
 
         var pointSymbol = new SimpleMarkerSymbol("diamond", 20,
           new SimpleLineSymbol("solid", new Color([88, 116, 152]), 2),
@@ -410,7 +429,7 @@
         
         var serviceAreaParams = new ServiceAreaParameters();
         serviceAreaParams.outSpatialReference = map.spatialReference;          
-        serviceAreaParams.defaultBreaks= [10];
+        serviceAreaParams.defaultBreaks= [minutes];
         serviceAreaParams.returnFacilities = false;
         serviceAreaParams.facilities = facilities;
 
@@ -483,11 +502,11 @@
 
     function mapData(serviceType) {
       if (serviceType == "CCAP") {
-        return serviceType = "Child Care";
+        return serviceType = "Daycare";
       }
 
-      if (serviceType == "TANF" || serviceType == "SNAP") {
-        return serviceType = "Job Placement Services";
+      if (serviceType == "TANF") {
+        return serviceType = "Employment Assistance";
       }
 
       if (serviceType == "LiHEAP") {
