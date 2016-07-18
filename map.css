@@ -49,11 +49,22 @@
   top: 20px;
   white-space: nowrap;
   z-index: 1;
-  max-height: 40px;
 }
 
 #travel:hover {
   cursor: pointer;
+}
+
+.travel-open {
+  width: 120px;
+}
+
+.travel-closed {
+  width: 40px;
+}
+
+#travel-icons {
+  margin-bottom: 3px;
 }
 
 /* Popup override */
