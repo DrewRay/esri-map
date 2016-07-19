@@ -24,13 +24,13 @@
           "<div id='map'></div>" +
           "<div id='travel' ng-class='travelOptions.selected ? \"travel-open\" : \"travel-closed\"' title='20 mins'>" +
             "<img ng-click='travelOptions.selected = !travelOptions.selected' ng-if='travelOptions.selected == false' src='https://rawgit.com/savtwo/esri-map/master/radius_pin_small.png' width='40' height='40'>" +
-            "<img id='travel-icons' ng-click='loadTravelRadius(map, member, 20, \"drive\")' ng-if='travelOptions.selected == true' src='https://rawgit.com/savtwo/esri-map/master/drive_off.png'>" +
-            "<img id='travel-icons' ng-click='loadTravelRadius(map, member, 20, \"walk\")' ng-if='travelOptions.selected == true' src='https://rawgit.com/savtwo/esri-map/master/walk_off.png' height='32'>" +
+            "<img id='travel-icons' ng-click='loadTravelRadius(map, member, 20, \"drive\")' ng-if='travelOptions.selected == true' src='img/drive_off.png'>" +
+            "<img id='travel-icons' ng-click='loadTravelRadius(map, member, 20, \"walk\")' ng-if='travelOptions.selected == true' src='img/walk_off.png' height='32'>" +
             "<img ng-click='travelOptions.selected = !travelOptions.selected; clearTravelRadius(map)' ng-if='travelOptions.selected == true' src='https://rawgit.com/savtwo/esri-map/master/radius_pin_small.png' width='40' height='40'>" +
           "</div>" +
           "<div id='listview' ng-if='show'>" +
             "<div class='listview-header'>" +
-              "<span class='listview-name'>{{attrs.Name}}</span><span ng-click='closeDetails(false)' class='cux-icon-close'></span>" +
+              "<span class='listview-name'>{{attrs.Name}}</span><span ng-click='closeDetails(false)' class='close-list'>X</span>" +
             "</div><br/>" +
             "Category: {{attrs.ServiceCategory}}<br/>" +
             "Service Type: {{attrs.ServiceType}}<br/><br/>" +
