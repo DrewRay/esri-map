@@ -502,18 +502,18 @@
 
     function mapData(serviceType) {
       if (serviceType == "CCAP") {
-        return serviceType = "Daycare";
+        return serviceType = "Child Care";
       }
 
-      if (serviceType == "TANF") {
-        return serviceType = "Employment Assistance";
+      if (serviceType == "TANF" || serviceType == "SNAP") {
+        return serviceType = "Job Placement Services";
       }
 
       if (serviceType == "LiHEAP") {
         return serviceType = "Utility Assistance";
       }
 
-      if (serviceType == "QHP" || serviceType == "CHIP" || serviceType == "MEDI") {
+      if (serviceType == "QHP" || serviceType == "CHIP" || serviceType == "MEDI" || serviceType == "Medicaid") {
         return serviceType = "Medical";
       }
 
