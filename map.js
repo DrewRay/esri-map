@@ -318,14 +318,14 @@
       }
       
       require(["esri/tasks/locator"], function(Locator) {
-        var locator = new Locator("https://healthstate.optum.com/arcgis/rest/services/Street_Addresses/GeocodeServer");
+        var locator = new Locator("https://healthstate.optum.com/arcgis/rest/services/USA/GeocodeServer");
         var locatorParams = {};
         
         if (extentMulti && map.extent) {
           locatorParams.searchExtent = map.extent.expand(extentMulti);
         }
         locatorParams.address = {
-          "Single Line Input": address
+          "SingleLine": address
         };
         
         // geocode address to location X/Y
