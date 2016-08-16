@@ -120,7 +120,7 @@
         $scope.map = new Map("map", crfMapService.attributes.options);
         
         // resourcesLayer properties
-        $scope.resourcesLayer = new FeatureLayer("https://map-stg.optum.com/arcgis/rest/services/Projects/OCRF_ResourceLocations/MapServer/0", {
+        $scope.resourcesLayer = new FeatureLayer("https://healthstate-stg.optum.com/arcgis/rest/services/crf/OCRF_LocationsFlat_repl/MapServer/0", {
           id: "resources",
           infoTemplate: template,
           outFields: ["*"]
@@ -276,7 +276,7 @@
         center: [-93.45536540319006, 44.85786213722895],
         zoom: 11
       },
-      resourcesLayerUrl: "https://map-stg.optum.com/arcgis/rest/services/Projects/OCRF_ResourceLocations/MapServer/0",
+      resourcesLayerUrl: "https://healthstate-stg.optum.com/arcgis/rest/services/crf/OCRF_LocationsFlat_repl/MapServer/0",
       resourcesOptions: {
         id: "resources",
         outFields: ["*"]
@@ -368,7 +368,7 @@
         f: "pjson"
       };
 
-      return $http.get("https://map-stg.optum.com/arcgis/rest/services/Projects/OCRF_ResourceLocations/MapServer/0/query", { params: qs }).then(success, fail);
+      return $http.get("https://healthstate-stg.optum.com/arcgis/rest/services/crf/OCRF_LocationsFlat_repl/MapServer/0/query", { params: qs }).then(success, fail);
       
       function success(response) {
         return response.data;
