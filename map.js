@@ -276,7 +276,7 @@
         center: [-93.45536540319006, 44.85786213722895],
         zoom: 11
       },
-      resourcesLayerUrl: "http://services5.arcgis.com/K2yPZ3ZEXAMKfS1y/ArcGIS/rest/services/OCRF_ResourceLocations/FeatureServer/0,
+      resourcesLayerUrl: "http://services5.arcgis.com/K2yPZ3ZEXAMKfS1y/ArcGIS/rest/services/OCRF_ResourceLocations/FeatureServer/0",
       resourcesOptions: {
         id: "resources",
         outFields: ["*"]
