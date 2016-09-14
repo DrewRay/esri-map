@@ -1897,7 +1897,7 @@
   /**
    * Create directive called "crfMap" that is applied to module called "IE.crfMap"
    */
-  angular.module("IE.crfMap", [])
+  angular.module("IE.crfMap", ["rzModule"])
   .directive("crfMap", crfMap)
   .controller("crfMapCtrl", crfMapCtrl)
   .service("crfMapService", crfMapService);
