@@ -1897,7 +1897,7 @@
   /**
    * Create directive called "crfMap" that is applied to module called "IE.crfMap"
    */
-  angular.module("IE.crfMap", ["rzModule"])
+  angular.module("IE.crfMap", [])
   .directive("crfMap", crfMap)
   .controller("crfMapCtrl", crfMapCtrl)
   .service("crfMapService", crfMapService);
@@ -1913,7 +1913,9 @@
         callback: "&",
         initialview: "=?"
       },
-      template: 
+      template:
+        "<script src='https://cdnjs.cloudflare.com/ajax/libs/angularjs-slider/2.11.0/rzslider.min.js' type='text/javascript'></script>" +
+        "<link href='https://cdnjs.cloudflare.com/ajax/libs/angularjs-slider/2.11.0/rzslider.min.css' rel='stylesheet'></link>" +
         "<div id='container'>" +
           "<div id='mapview' ng-show='view == \"map\"'>" +
             "<div id='mapview-header'>" +
