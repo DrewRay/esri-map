@@ -1,7 +1,7 @@
 #container {
   position: relative;
-  width: 1000px; /* needs to come from scope property */
-  height: 750px; /* needs to come from scope property */
+  width: 100%; /* needs to come from scope property */
+  height: 500px; /* needs to come from scope property */
 }
 
  html, body {
@@ -9,17 +9,17 @@
  }
 
 #map {
-  margin:0; padding:0;  width : 100%; height : 85%;
+  margin:0; padding:0;  width : 100%; height : 70%;
 }
 
 #mapview-header {
-  height: 10%;
+  height: 20%;
   width: 100%;
   text-align: center;
 }
 
 #mapcontrols {
-  height: 5%;
+  height: 10%;
   width: 100%;
 }
 
@@ -65,7 +65,8 @@
   float: right;
   z-index: 1;
   width: 283px;
-  height: 34px
+  height: 34px;
+  margin-right: 5%;
 }
 
 #inputAddress {
@@ -92,6 +93,7 @@
 #toggle {
   position: absolute;
   right: 0px;
+  margin-right: 5%;
 }
 
 #toggle-button {
@@ -116,10 +118,6 @@
 
 .provider-select {
   cursor: pointer;
-}
-
-.largerIcon {
-  font-size: 1.3em;
 }
 
 /* List View Scrunched */
@@ -226,7 +224,7 @@
   position: absolute;
   right: 20px;
   text-align: right;
-  top: 18%;
+  top: 34%;
   width: 390px;
   white-space: nowrap;
   z-index: 1;
@@ -349,7 +347,6 @@
 }
 
 input[type=range] {
-  -webkit-appearance: none;
   margin: 0px 5px;
   width: 70%;
   padding-bottom: 4%;
@@ -357,7 +354,7 @@ input[type=range] {
 input[type=range]:focus {
   outline: none;
 }
-input[type=range]::-webkit-slider-runnable-track {
+/*input[type=range]::-webkit-slider-runnable-track {
   width: 70%;
   height: 10px;
   cursor: pointer;
@@ -435,7 +432,7 @@ input[type=range]:focus::-ms-fill-lower {
 }
 input[type=range]:focus::-ms-fill-upper {
   background: #D8E0F3;
-}
+}*/
 
 /*! angularjs-slider - v2.11.0 - 
  (c) Rafal Zajac <rzajac@gmail.com>, Valentin Hervieu <valentin@hervieu.me>, Jussi Saarivirta <jusasi@gmail.com>, Angelin Sirbu <angelin.sirbu@gmail.com> - 
