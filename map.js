@@ -2442,6 +2442,8 @@
         routeParams.stops.features.push(new Graphic(addressPoint));
         routeParams.stops.features.push(new Graphic(resourcePoint));
         routeParams.directionsLengthUnits = Units.MILES;
+        routeParams.returnRoutes = false;
+        routeParams.returnDirections = false;
         
         /** Retrieve distance and set it in the resource attributes object */
         geometryService.distance(distParams, function(distance) {
