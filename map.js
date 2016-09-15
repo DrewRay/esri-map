@@ -1997,7 +1997,7 @@
             "</div>" +
             "<div id='listcontainer'>" +
               "<div id='listtable'>" +
-                "<table class='table table-bordered table-listview'>" +
+                "<table class='table table-listview'>" +
                   "<thead style='text-align: center'>" +
                     "<th width='33.3%'>Name</th>"+
                     "<th width='33.3%'>Address</th>"+
