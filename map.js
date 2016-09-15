@@ -2422,7 +2422,7 @@
       function(Point, Graphic, DistanceParameters, FeatureSet, GeometryService, RouteParams, RouteTask, Units, webMercatorUtils) {
         var addressPoint = new Point(address.x, address.y);
         var distParams = new DistanceParameters();
-        var geometryService = new GeometryService("https://map-stg.optum.com/arcgis/rest/services/Utilities/Geometry/GeometryServer");
+        var geometryService = new GeometryService("https://healthstate.optum.com/arcgis/rest/services/Utilities/Geometry/GeometryServer");
         
         var resourcePoint = new Point(resource.geometry.x, resource.geometry.y);
         if (Math.abs(resource.geometry.x) > 360) {
