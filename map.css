@@ -230,7 +230,7 @@
   width: 390px;
   white-space: nowrap;
   z-index: 1;
-  max-height: 50px;
+  height: 7%;
 }
 
 #travel:hover {
@@ -340,6 +340,101 @@
 /* Popup override */
 .esriPopup {
   visibility: hidden !important;
+}
+
+#slidervalue {
+  position: absolute;
+  top:70%;
+  right:40%;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  margin: 0px 5px;
+  width: 70%;
+  padding-bottom: 4%;
+}
+input[type=range]:focus {
+  outline: none;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  width: 70%;
+  height: 10px;
+  cursor: pointer;
+  animate: 0.2s;
+  box-shadow: 0px 0px 0px #000000;
+  background: #D8E0F3;
+  border-radius: 10px;
+  border: 0px solid #010101;
+}
+input[type=range]::-webkit-slider-thumb {
+  box-shadow: 1px 1px 1px #000031;
+  border: 1px solid #00001E;
+  height: 20px;
+  width: 20px;
+  border-radius: 16px;
+  background: #0DB9F0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -5.5px;
+}
+input[type=range]:focus::-webkit-slider-runnable-track {
+  background: #D8E0F3;
+}
+input[type=range]::-moz-range-track {
+  width: 70%;
+  height: 10px;
+  cursor: pointer;
+  animate: 0.2s;
+  box-shadow: 0px 0px 0px #000000;
+  background: #D8E0F3;
+  border-radius: 10px;
+  border: 0px solid #010101;
+}
+input[type=range]::-moz-range-thumb {
+  box-shadow: 1px 1px 1px #000031;
+  border: 1px solid #00001E;
+  height: 20px;
+  width: 20px;
+  border-radius: 16px;
+  background: #0DB9F0;
+  cursor: pointer;
+}
+input[type=range]::-ms-track {
+  width: 70%;
+  height: 10px;
+  cursor: pointer;
+  animate: 0.2s;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+input[type=range]::-ms-fill-lower {
+  background: #D8E0F3;
+  border: 0px solid #010101;
+  border-radius: 20px;
+  box-shadow: 0px 0px 0px #000000;
+}
+input[type=range]::-ms-fill-upper {
+  background: #D8E0F3;
+  border: 0px solid #010101;
+  border-radius: 20px;
+  box-shadow: 0px 0px 0px #000000;
+}
+input[type=range]::-ms-thumb {
+  box-shadow: 1px 1px 1px #000031;
+  border: 1px solid #00001E;
+  height: 20px;
+  width: 20px;
+  border-radius: 16px;
+  background: #0DB9F0;
+  cursor: pointer;
+}
+input[type=range]:focus::-ms-fill-lower {
+  background: #D8E0F3;
+}
+input[type=range]:focus::-ms-fill-upper {
+  background: #D8E0F3;
 }
 
 /*! angularjs-slider - v2.11.0 - 
