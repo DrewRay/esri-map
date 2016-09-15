@@ -13,13 +13,13 @@
 }
 
 #mapview-header {
-  height: 20%;
+  height: 15%;
   width: 100%;
   text-align: center;
 }
 
 #mapcontrols {
-  height: 10%;
+  height: 8%;
   width: 100%;
 }
 
@@ -224,11 +224,11 @@
   position: absolute;
   right: 20px;
   text-align: right;
-  top: 34%;
-  width: 390px;
+  top: 27%;
+  width: 80%;
   white-space: nowrap;
   z-index: 1;
-  height: 7%;
+  height: 10%;
 }
 
 #travel:hover {
@@ -342,14 +342,17 @@
 
 #slidervalue {
   position: absolute;
-  top:70%;
+  top:60%;
   right:40%;
+  font-size: 14px;
 }
 
 input[type=range] {
   margin: 0px 5px;
-  width: 70%;
-  padding-bottom: 4%;
+  width: 65%;
+  padding-bottom: 0px;
+  padding-top: 0px;
+  display: inline-block;
 }
 input[type=range]:focus {
   outline: none;
