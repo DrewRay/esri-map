@@ -360,6 +360,10 @@ input[type=range] {
 input[type=range]:focus {
   outline: none;
 }
+
+input[type=range]::-ms-tooltip {
+  display: none;
+}
 /*input[type=range]::-webkit-slider-runnable-track {
   width: 70%;
   height: 10px;

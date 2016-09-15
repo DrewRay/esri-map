@@ -2049,7 +2049,7 @@
           $scope.centerMap(newMember.needs[0].addresses[0]);
           $scope.show = false;
           $scope.travelOptions.selected = false;
-          $scope.inputAddress = newMember.needs[0].addresses[0].address;
+          $scope.inputAddress = newMember.needs[0].addresses[0].ADR_LN_1_TXT + " " + newMember.needs[0].addresses[0].ADR_LN_2_TXT + ", " + newMember.needs[0].addresses[0].CTY_NM + ", " + newMember.needs[0].addresses[0].ST + " " + newMember.needs[0].addresses[0].ZIP;
 
           createFeatureLayer(defExp);
         }
@@ -2091,7 +2091,7 @@
         
         if (newProvider && newMember.provider == null) {
           $scope.centerMap(newMember.needs[0].addresses[0]);
-          $scope.inputAddress = newMember.needs[0].addresses[0].address;
+          $scope.inputAddress = newMember.needs[0].addresses[0].ADR_LN_1_TXT + " " + newMember.needs[0].addresses[0].ADR_LN_2_TXT + ", " + newMember.needs[0].addresses[0].CTY_NM + ", " + newMember.needs[0].addresses[0].ST + " " + newMember.needs[0].addresses[0].ZIP;
           $scope.show = false;
           $scope.travelOptions.selected = false;
         }
