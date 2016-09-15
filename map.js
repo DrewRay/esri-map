@@ -1935,7 +1935,7 @@
               "</div>" +
             "</div>" +
             "<div id='map'></div>" +
-            "<div id='travel' ng-class='travelOptions.selected ? \"travel-open\" : \"travel-minimized\"' title='20 mins'>" +
+            "<div id='travel' ng-class='travelOptions.selected ? \"travel-open\" : \"travel-minimized\"'>" +
               "<div ng-class='{\"spinner\":travelSlider.options.disabled}'></div>" +
               "<img ng-click='travelOptions.selected = !travelOptions.selected; loadTravelRadius(member, \"drive\", travelSlider.value)' ng-if='travelOptions.selected == false' src='https://rawgit.com/savtwo/esri-map/master/radius_pin_small.png' width='40' height='40'>" +
               "<img id='travel-icons' ng-class='{\"travel-type-icon\":!travelSlider.options.disabled, \"travel-type-icon-disabled\":travelSlider.options.disabled}' ng-click='loadTravelRadius(member, \"drive\", travelSlider.value)' ng-if='travelOptions.selected == true && travelOptions.type != \"drive\"' src='https://rawgit.com/savtwo/esri-map/master/drive_off.png'>" +
