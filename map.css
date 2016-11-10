@@ -150,7 +150,7 @@
 
 #listcontainer {
   position: inherit;
-  padding-top: 8%;
+  padding-top: 7%;
 }
 
 #listtable {
@@ -364,85 +364,14 @@ input[type=range]:focus {
 input[type=range]::-ms-tooltip {
   display: none;
 }
-/*input[type=range]::-webkit-slider-runnable-track {
-  width: 70%;
-  height: 10px;
-  cursor: pointer;
-  animate: 0.2s;
-  box-shadow: 0px 0px 0px #000000;
-  background: #D8E0F3;
-  border-radius: 10px;
-  border: 0px solid #010101;
+
+#slidercontainer {
+  width: 60%;
+  margin-right: 10px;
+  margin-left: 1px;
+  margin-bottom: 50px;
+  display: inline-block;
 }
-input[type=range]::-webkit-slider-thumb {
-  box-shadow: 1px 1px 1px #000031;
-  border: 1px solid #00001E;
-  height: 20px;
-  width: 20px;
-  border-radius: 16px;
-  background: #0DB9F0;
-  cursor: pointer;
-  -webkit-appearance: none;
-  margin-top: -5.5px;
-}
-input[type=range]:focus::-webkit-slider-runnable-track {
-  background: #D8E0F3;
-}
-input[type=range]::-moz-range-track {
-  width: 70%;
-  height: 10px;
-  cursor: pointer;
-  animate: 0.2s;
-  box-shadow: 0px 0px 0px #000000;
-  background: #D8E0F3;
-  border-radius: 10px;
-  border: 0px solid #010101;
-}
-input[type=range]::-moz-range-thumb {
-  box-shadow: 1px 1px 1px #000031;
-  border: 1px solid #00001E;
-  height: 20px;
-  width: 20px;
-  border-radius: 16px;
-  background: #0DB9F0;
-  cursor: pointer;
-}
-input[type=range]::-ms-track {
-  width: 70%;
-  height: 10px;
-  cursor: pointer;
-  animate: 0.2s;
-  background: transparent;
-  border-color: transparent;
-  color: transparent;
-}
-input[type=range]::-ms-fill-lower {
-  background: #D8E0F3;
-  border: 0px solid #010101;
-  border-radius: 20px;
-  box-shadow: 0px 0px 0px #000000;
-}
-input[type=range]::-ms-fill-upper {
-  background: #D8E0F3;
-  border: 0px solid #010101;
-  border-radius: 20px;
-  box-shadow: 0px 0px 0px #000000;
-}
-input[type=range]::-ms-thumb {
-  box-shadow: 1px 1px 1px #000031;
-  border: 1px solid #00001E;
-  height: 20px;
-  width: 20px;
-  border-radius: 16px;
-  background: #0DB9F0;
-  cursor: pointer;
-}
-input[type=range]:focus::-ms-fill-lower {
-  background: #D8E0F3;
-}
-input[type=range]:focus::-ms-fill-upper {
-  background: #D8E0F3;
-}*/
 
 /*! angularjs-slider - v2.11.0 - 
  (c) Rafal Zajac <rzajac@gmail.com>, Valentin Hervieu <valentin@hervieu.me>, Jussi Saarivirta <jusasi@gmail.com>, Angelin Sirbu <angelin.sirbu@gmail.com> - 
@@ -684,9 +613,90 @@ rzslider {
   margin-right: 0px;
   margin-left: 1px;
   margin-bottom: 50px;
-  width: 260px;
 }
 
 rz-bar.rz-selection {  
   background: #dad9d9;  
+}
+
+.oui-pnav-2 {
+  z-index: 99999;
+  max-height: 0;
+  overflow: hidden;
+  -webkit-transition: max-height .2s ease;
+  -moz-transition: max-height .2s ease;
+  -ms-transition: max-height .2s ease;
+  -o-transition: max-height .2s ease;
+  transition: max-height .2s ease;
+}
+
+.active .oui-pnav-2 {
+  max-height: 20em;
+  overflow: visible;
+  -webkit-transition: max-height .6s ease;
+  -moz-transition: max-height .6s ease;
+  -ms-transition: max-height .6s ease;
+  -o-transition: max-height .6s ease;
+  transition: max-height .6s ease;
+  -webkit-animation: fadeIn .6s;
+  -moz-animation: fadeIn .6s;
+  -o-animation: fadeIn .6s;
+  animation: fadeIn .6s;
+}
+
+.oui-pnav-container {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  margin-bottom: 5px;
+}
+
+.tk-vnav-name {
+  padding-left: 1.417rem;
+  padding-right: .583rem;
+  padding-top: .483rem;
+  padding-bottom: .483rem;
+}
+.tk-vnav-name:hover {
+  cursor: pointer;
+  border-left: .25rem solid #f47b29;
+}
+
+.tk-vnav-filters-list {
+  display: table;
+  width: 100%;
+}
+
+.tk-vnav-nested-item {
+  padding-left: 2.834rem;
+  padding-right: .583rem;
+  padding-top: .483rem;
+  padding-bottom: .483rem;
+  display: table-cell;
+}
+.tk-vnav-nested-item:hover {
+  cursor: pointer;
+  border-left: .25rem solid #f47b29;
+}
+
+.tk-vnav-nested-item-name {
+  display: inline-block;
+  max-width: 90%;
+}
+
+.tk-vnav-nested-item-icon {
+  display: inline;
+}
+
+.tk-vnav>li .cux-icon-checkmark_action {
+  float: right;
+  line-height: 1.25rem;
+}
+
+.tk-vnav-name.collapsed + ul {
+  display: none;
+}
+
+.filter {
+  color: #f47b29;
 }
