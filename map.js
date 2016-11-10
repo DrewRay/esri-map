@@ -1200,7 +1200,7 @@
                   "<div id='slidercontainer'>" +
                     "<rzslider rz-slider-model='travelSlider.value' rz-slider-options='travelSlider.options'></rzslider>" +
                   "</div>" +
-                  "<img ng-class='{\"travel-toggle-icon\":!travelSlider.options.disabled, \"travel-toggle-icon-disabled\":travelSlider.options.disabled}' ng-click='travelOptions.selected = !travelOptions.selected; clearTravelRadius(map)' ng-if='travelOptions.selected == true' src='https://rawgit.com/savtwo/esri-map/master/radius_pin_small.png' width='40' height='40'>" +
+                  "<img style='vertical-align: baseline;' ng-class='{\"travel-toggle-icon\":!travelSlider.options.disabled, \"travel-toggle-icon-disabled\":travelSlider.options.disabled}' ng-click='travelOptions.selected = !travelOptions.selected; clearTravelRadius(map)' ng-if='travelOptions.selected == true' src='https://rawgit.com/savtwo/esri-map/master/radius_pin_small.png' width='40' height='40'>" +
                 "</div>" +
                 "<div ng-class='{detailsviewpadded: features.flyoutmenu}' id='detailsview' ng-if='show'>" +
                   "<div class='detailsview-header'>" +
