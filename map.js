@@ -1,6 +1,6 @@
 /* eslint-disable */
 (function() {
-  "use strict"
+   "use strict"
     
     angular.module("IE.crfMap", [])
     .directive("crfMap", crfMap)
@@ -162,18 +162,18 @@
 
       function init() {
         if(!$scope.map) {
-          $scope.createMap().then(success, fail);
+           $scope.createMap().then(success, fail);
+        } else {
+          chooseRoute();
+        }
 
-          function success(response) {
+        function success(response) {
             $scope.map = response.map;
             $scope.resourcesLayer = response.resourcesLayer;
             chooseRoute();
           }
 
-          function fail() {};
-        } else {
-          chooseRoute();
-        }
+        function fail() {};
 
       }
 
@@ -188,73 +188,68 @@
           var newMember = $scope.member;
           var newProvider = $scope.crfProvider;
           if (newMember && !newProvider) {
-            crfMapService.centerMap(newMember.needs[0].addresses[0], $scope.member, $scope.map, $scope.features.countyServed).then(success, fail);
-
-            function success(response) {
-              $scope.member = response;
-              var defExp = crfMapService.getProviders(newMember.needs[0].details, $scope.member.locationdetails);
-              $scope.show = false;
-              $scope.travelOptions.selected = false;
-              $scope.inputAddress = newMember.needs[0].addresses[0].ADR_LN_1_TXT + " " + newMember.needs[0].addresses[0].ADR_LN_2_TXT + ", " + newMember.needs[0].addresses[0].CTY_NM + ", " + newMember.needs[0].addresses[0].ST + " " + newMember.needs[0].addresses[0].ZIP;
-
-              $scope.createFeatureLayer(defExp);
-            }
-
-            function fail(response) {}
+            crfMapService.centerMap(newMember.needs[0].addresses[0], $scope.member, $scope.map, $scope.features.countyServed).then(success1, fail);
           }
-          
           if (newProvider) {
             var address = newProvider.ADR_LN_1_TXT + ", " + newProvider.CTY_NM + ", " + newProvider.ST + " " + newProvider.ZIP;
-            crfMapService.centerMap(address, $scope.member, $scope.map, $scope.features.countyServed).then(success, fail);
+            crfMapService.centerMap(address, $scope.member, $scope.map, $scope.features.countyServed).then(success2, fail);
+          }          
+          if (newProvider && newMember.provider == null) {
+            $scope.centerMap(newMember.needs[0].addresses[0], $scope.member, $scope.map, $scope.features.countyServed).then(success3, fail);
+          }
+        }
 
-            function success(response) {
-              $scope.member = response;
-              var defExp = crfMapService.getProviders(newMember.needs[0].details, $scope.member.locationdetails);
-              $scope.show = true;
+        function success1(response) {
+          $scope.member = response;
+          var defExp = crfMapService.getProviders(newMember.needs[0].details, $scope.member.locationdetails);
+          $scope.show = false;
+          $scope.travelOptions.selected = false;
+          $scope.inputAddress = newMember.needs[0].addresses[0].ADR_LN_1_TXT + " " + newMember.needs[0].addresses[0].ADR_LN_2_TXT + ", " + newMember.needs[0].addresses[0].CTY_NM + ", " + newMember.needs[0].addresses[0].ST + " " + newMember.needs[0].addresses[0].ZIP;
 
-              crfMapService.getProviderById(newProvider).then(function(response) {
-                var layer = $scope.map.getLayer("resources");
-                $scope.attrs = response.features[0].attributes;
-                newProvider.geometry = response.features[0].geometry;
+          $scope.createFeatureLayer(defExp);
+        }
+        function success2(response) {
+            $scope.member = response;
+            var defExp = crfMapService.getProviders(newMember.needs[0].details, $scope.member.locationdetails);
+            $scope.show = true;
 
-                require(["esri/tasks/query"], function(Query) {
-                  var query = new Query();
-                  query.objectIds = [newProvider.id];
-                  query.outFields = ["*"];
+            crfMapService.getProviderById(newProvider).then(function(response) {
+              var layer = $scope.map.getLayer("resources");
+              $scope.attrs = response.features[0].attributes;
+              newProvider.geometry = response.features[0].geometry;
 
-                  layer.queryFeatures(query, function(results) {
-                    var res = results.features[0];
+              require(["esri/tasks/query"], function(Query) {
+                var query = new Query();
+                query.objectIds = [newProvider.id];
+                query.outFields = ["*"];
 
-                    if (!res) {
-                      return;
-                    }
+                layer.queryFeatures(query, function(results) {
+                  var res = results.features[0];
 
-                    if (res.geometry.x == "NaN" || res.geometry.y == "NaN") {
-                      return;
-                    }
+                  if (!res) {
+                    return;
+                  }
 
-                    showBack($scope.map, res);
-                  });
+                  if (res.geometry.x == "NaN" || res.geometry.y == "NaN") {
+                    return;
+                  }
+
+                  showBack($scope.map, res);
                 });
               });
-              
-              $scope.createFeatureLayer(defExp);
-            }
-
-            function fail(response) {}
+            });
+            
+            $scope.createFeatureLayer(defExp);
           }
-          
-          if (newProvider && newMember.provider == null) {
-            $scope.centerMap(newMember.needs[0].addresses[0], $scope.member, $scope.map, $scope.features.countyServed).then(success, fail);
 
-            function success(response) {
+          function success3(response) {
               $scope.member = response;
               $scope.inputAddress = newMember.needs[0].addresses[0].ADR_LN_1_TXT + " " + newMember.needs[0].addresses[0].ADR_LN_2_TXT + ", " + newMember.needs[0].addresses[0].CTY_NM + ", " + newMember.needs[0].addresses[0].ST + " " + newMember.needs[0].addresses[0].ZIP;
               $scope.show = false;
               $scope.travelOptions.selected = false;
             }
-          }
-        }
+
+          function fail(response) {}
       }
 
       function changeAddress(address) {
