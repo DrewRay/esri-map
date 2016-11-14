@@ -301,7 +301,7 @@
           
           // resourcesLayer properties
           // $scope.resourcesLayer = new FeatureLayer("https://healthstate-stg.optum.com/arcgis/rest/services/crf/OCRF_LocationsFlat_repl/MapServer/0", {
-          $scope.resourcesLayer = new FeatureLayer("https://map-stg.optum.com/arcgis/rest/services/Projects/OCRF_ResourceLocations/MapServer/0", {  
+          $scope.resourcesLayer = new FeatureLayer("https://gis.optum.com/arcgis/rest/services/OCRF/ResourceLocations/MapServer/0", {  
             id: "resources",
             mode: mapmode,
             infoTemplate: template,
@@ -584,7 +584,7 @@
           center: [-93.45536540319006, 44.85786213722895],
           zoom: 11
         },
-        resourcesLayerUrl: "https://healthstate-stg.optum.com/arcgis/rest/services/crf/OCRF_LocationsFlat_repl/MapServer/0",
+        resourcesLayerUrl: "https://gis.optum.com/arcgis/rest/services/OCRF/ResourceLocations/MapServer/0",
         resourcesOptions: {
           id: "resources",
           outFields: ["*"]
@@ -628,7 +628,7 @@
         function(Point, Graphic, DistanceParameters, FeatureSet, GeometryService, RouteParams, RouteTask, Units, webMercatorUtils) {
           var addressPoint = new Point(address.x, address.y);
           var distParams = new DistanceParameters();
-          var geometryService = new GeometryService("https://healthstate.optum.com/arcgis/rest/services/Utilities/Geometry/GeometryServer");
+          var geometryService = new GeometryService("https://gis.optum.com/arcgis/rest/services/Utilities/Geometry/GeometryServer");
           
           var resourcePoint = new Point(resource.geometry.x, resource.geometry.y);
           if (Math.abs(resource.geometry.x) > 360) {
@@ -636,7 +636,7 @@
             resourcePoint = new Point(latlng[0], latlng[1]);
           }
           var routeParams = new RouteParams();
-          var routeTask = new RouteTask("https://healthstate.optum.com/arcgis/rest/services/Routing/Routes/NAServer/FindRoutes");
+          var routeTask = new RouteTask("https://gis.optum.com/arcgis/rest/services/Routing/Routes/NAServer/FindRoutes");
 
           distParams.distanceUnit = GeometryService.UNIT_STATUTE_MILE;
           distParams.geometry1 = addressPoint;
@@ -721,7 +721,7 @@
         }
         
         require(["esri/tasks/locator"], function(Locator) {
-          var locator = new Locator("https://healthstate.optum.com/arcgis/rest/services/USA/GeocodeServer");
+          var locator = new Locator("https://gis.optum.com/arcgis/rest/services/USA/GeocodeServer");
           var locatorParams = {};
           
           if (extentMulti && map.extent) {
@@ -770,7 +770,7 @@
           f: "pjson"
         };
 
-        return $http.get("https://healthstate.optum.com/arcgis/rest/services/US_ReferenceGeography_nationlevel/MapServer/2/query", { params: qs }).then(success, fail);
+        return $http.get("https://gis.optum.com/arcgis/rest/services/US_ReferenceGeography_nationlevel/MapServer/2/query", { params: qs }).then(success, fail);
         
         function success(response) {
           return response.data;
@@ -797,7 +797,7 @@
           f: "pjson"
         };
 
-        return $http.get("https://healthstate-stg.optum.com/arcgis/rest/services/crf/OCRF_LocationsFlat_repl/MapServer/0/query", { params: qs }).then(success, fail);
+        return $http.get("https://gis.optum.com/arcgis/rest/services/OCRF/ResourceLocations/MapServer/0/query", { params: qs }).then(success, fail);
         
         function success(response) {
           return response.data;
@@ -933,7 +933,7 @@
           serviceAreaParams.returnFacilities = false;
           serviceAreaParams.facilities = facilities;
 
-          var serviceAreaTask = new ServiceAreaTask("https://healthstate.optum.com/arcgis/rest/services/Routing/ServiceAreas/NAServer/GenerateServiceAreas");
+          var serviceAreaTask = new ServiceAreaTask("https://gis.optum.com/arcgis/rest/services/Routing/ServiceAreas/NAServer/GenerateServiceAreas");
 
           //solve 
           serviceAreaTask.solve(serviceAreaParams, function(solveResult){
