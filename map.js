@@ -72,8 +72,10 @@
             $scope.features.travel = $scope.features.travelRadius;
 
             if($scope.features.flyoutmenu) {
-              $scope.filterCategories = $scope.getFilters($scope.features.category);
-              $scope.updateFilters();
+              $scope.getFilters($scope.features.category).then(function(response) {
+                $scope.filterCategories = response;
+                $scope.updateFilters();
+              });
             }
           }
           return $scope.features;
@@ -497,28 +499,56 @@
 
       function getFilters(category) {
         var filters = [];
-        
-        self.rawFilters.forEach(function(rawFilter) {
-          if(rawFilter.name.toLowerCase() == category.toLowerCase()) {
-            var newFilter = {
-              name: rawFilter.name,
-              expanded: true,
-              filters: []
-            };
 
-            rawFilter.filters.forEach(function(filter) {
-              newFilter.filters.push({
-                displayName: filter,
-                filterName: filter,
-                active: true
+        return crfMapService.getTaxonomy().then(success, fail);
+
+        function success(response) {
+          response.Activ8.forEach(function(rawFilter) {
+            if(rawFilter.category.toLowerCase() == category.toLowerCase()) {
+              var newFilter = {
+                name: rawFilter.category,
+                expanded: true,
+                filters: []
+              };
+
+              rawFilter.serviceTypes.forEach(function(filter) {
+                newFilter.filters.push({
+                  id: filter.id,
+                  displayName: filter.displayName,
+                  filterName: filter.displayName,
+                  AirsCodes: filter.AirsCodes,
+                  active: true
+                });
               });
-            });
 
-            filters.push(newFilter);
-          }
-        });
+              filters.push(newFilter);
+            }
+          });
+          return filters;
+        }
+
+        function fail() {}
         
-        return filters;
+        // self.rawFilters.forEach(function(rawFilter) {
+        //   if(rawFilter.name.toLowerCase() == category.toLowerCase()) {
+        //     var newFilter = {
+        //       name: rawFilter.name,
+        //       expanded: true,
+        //       filters: []
+        //     };
+
+        //     rawFilter.filters.forEach(function(filter) {
+        //       newFilter.filters.push({
+        //         displayName: filter,
+        //         filterName: filter,
+        //         active: true
+        //       });
+        //     });
+
+        //     filters.push(newFilter);
+        //   }
+        // });
+        // return filters;
       }
 
       function showDetails(feature, show) {
@@ -563,7 +593,7 @@
             if ($scope.filterCategories[cat].filters[filter].active) {
               newFilters.push({
                 category: $scope.filterCategories[cat].name,
-                filter: $scope.filterCategories[cat].filters[filter].filterName
+                filter: $scope.filterCategories[cat].filters[filter]
               });
             }
           }
@@ -609,6 +639,7 @@
       self.loadTravelRadius = loadTravelRadius;
       self.mapLoaded = mapLoaded;
       self.loadSearchWidget = loadSearchWidget;
+      self.getTaxonomy = getTaxonomy;
 
       /**
        * Calculate the distance and travel time between two points.
@@ -834,7 +865,12 @@
             }
           })
         } else {
-          var str = "ServiceType IN ('" + serviceType.join("', '") + "')";
+          var str;
+          if (serviceType[0] == "Medical") {
+            str = "(ServiceCategory = 'Health') OR (ServiceType IN ('" + serviceType.join("', '") + "'))";
+          } else {
+            str = "ServiceType IN ('" + serviceType.join("', '") + "')";
+          }
           qs.filterwhere = str;
         }
 
@@ -860,29 +896,47 @@
       }
 
       function getProvidersNoLocation(filters) {
-        var serviceType = [];
+        var codestring = "";
         var qs = {
           filterwhere: ""
         };
         var defExp;
         filters.forEach(function(filter) {
-          var newstype = translateFilter(filter.category, filter.filter);
           if (qs.filterwhere.length === 0) {
-            if(newstype.field == "AIRSCode") {
-              qs.filterwhere = "((ServiceCategory = '" + newstype.category + "' AND " + newstype.field + " = '" + newstype.value + "') OR (ServiceCategory = '" + newstype.category + "' AND SearchTags = '"+ newstype.value + "'))"
-            } else {
-              qs.filterwhere = "(ServiceCategory = '" + newstype.category +"' AND " + newstype.field + " = '" + newstype.value + "')";
-            }
+              if(filter.filter.AirsCodes.length === 1) {
+                qs.filterwhere = "(AIRSCode IN ('" + filter.filter.AirsCodes[0] + "'))"
+              } else {
+                filter.filter.AirsCodes.forEach(function(code) {
+                  if(codestring.length === 0) {
+                    codestring += "'" + code +"'";
+                  } else {
+                    codestring += ", '" + code +"'";
+                  }
+                })
+                qs.filterwhere = "(AIRSCode IN (" + codestring + "))"
+                codestring = "";
+              }
           } else {
-            if(newstype.field == "AIRSCode") {
-              qs.filterwhere += " OR ((ServiceCategory = '" + newstype.category + "' AND " + newstype.field + " = '" + newstype.value + "') OR (ServiceCategory = '" + newstype.category + "' AND SearchTags = '"+ newstype.value + "'))"
+            if(filter.filter.AirsCodes.length === 1) {
+                qs.filterwhere += " OR (AIRSCode IN ('" + filter.filter.AirsCodes[0] + "'))"
             } else {
-              qs.filterwhere += " OR (ServiceCategory = '" + newstype.category +"' AND " + newstype.field + " = '" + newstype.value + "')";
+              filter.filter.AirsCodes.forEach(function(code) {
+                if(codestring.length === 0) {
+                  codestring += "'" + code +"'";
+                } else {
+                  codestring += ", '" + code +"'";
+                }
+              })
+              qs.filterwhere += " OR (AIRSCode IN (" + codestring + "))"
+              codestring = "";
             }
           }
         })
-
-        defExp = qs.filterwhere;
+        if(qs.filterwhere.length === 0) {
+          defExp = "(ValidationStatus LIKE '%Accept%') AND (1=2)";
+        } else {
+          defExp = "(ValidationStatus LIKE '%Accept%') AND (" + qs.filterwhere + ")";
+        }
         
         return defExp;
       }
@@ -1129,6 +1183,18 @@
             //   showDetails(evt.result.feature, evt.result.feature.geometry);
             // });
           });
+      }
+
+      function getTaxonomy() {
+        return $http.get("translation.json").then(success, fail);
+        
+        function success(response) {
+          return response.data;
+        }
+        
+        function fail(response) {
+          return response.data;
+        }      
       }
     }
 
