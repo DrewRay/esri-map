@@ -1,88 +1,65 @@
 /* eslint-disable */
 (function() {
    "use strict"
-    
+
     angular.module("IE.crfMap", [])
-    .directive("crfMap", crfMap)
-    .controller("crfMapCtrl", crfMapCtrl)
-    .service("crfMapService", crfMapService)
-    .run(runMap)
-    .factory("RzSliderOptions", RzSliderOptions)
-    .factory("rzThrottle", rzThrottle)
-    .factory("RzSlider", RzSlider)
-    .directive("rzslider",rzslider)
-    .run(runSlider);
+})();
 
-    crfMap.$inject = ["$compile", "$document", "$rootScope", "$q", "crfMapService"];
-    /* @ngInject */
-    function crfMap($compile, $document, $rootScope, $q, crfMapService) {
-      return {
-        restrict: "E",
-        scope: {
-          member: "=",
-          crfProvider: "=",
-          callback: "&",
-          features: "=?"
-        },
-        templateUrl: function(elem, attrs) {
-          //noinspection JSUnresolvedVariable
-          return 'mapTpl.html';
-        },
-        controller: "crfMapCtrl",
-        controllerAs: "c",
-        link: postLink
-      };
-      
-      function postLink($scope, ele, attrs, ctrl) {
-        $scope.$watchGroup(["crfProvider", "member"], function(newVal, oldVal) {
-          $scope.features = setInitialFeatures($scope.features);
-          $scope.init();
-        });   
+(function() {
+  "use strict";
 
-        function setInitialFeatures(features) {
-          if(typeof features == "undefined") {
-            $scope.features = {
-              initialview: "map",
-              travelRadius: true,
-              flyoutmenu: false,
-              category: "transportation",
-              addressChange: true,
-              countyServed: false
-            }
-          } else {
-            if(typeof $scope.features.initialview == "undefined") {
-              $scope.features.initialview = "map"
-            }
-            if(typeof $scope.features.travelRadius == "undefined") {
-              $scope.features.travelRadius = true;
-            }
-            if(typeof $scope.features.flyoutmenu == "undefined") {
-              $scope.features.flyoutmenu = false;
-            }
-            if(typeof $scope.features.category == "undefined") {
-              $scope.features.category = "transportation";
-            }
-            if(typeof $scope.features.addressChange == "undefined") {
-              $scope.features.addressChange = true;
-            }
-            if(typeof $scope.features.countyServed == "undefined") {
-              $scope.features.countyServed = false;
-            }
-            $scope.features.view = $scope.features.initialview;
-            $scope.features.travel = $scope.features.travelRadius;
+  angular.module("IE.crfMap").directive("flyoutmenu", flyoutmenu);
 
-            if($scope.features.flyoutmenu) {
-              $scope.getFilters($scope.features.category).then(function(response) {
-                $scope.filterCategories = response;
-                $scope.updateFilters();
-              });
-            }
-          }
-          return $scope.features;
+  flyoutmenu.$inject = ["$document", "$window", "menuService"];
+  /* @ngInject */
+  function flyoutmenu($document, $window, menuService) {
+    return {
+      restrict: "E",
+      link: link,
+      scope: {
+        body: "@",
+        closeButton: "@",
+        flyoutMenu: "@",
+        menuButton: "@"
+      }
+    };
+
+    function link(scope) {
+      var body = angular.element($document[0].querySelector("#" + scope.body + ""));
+      var closeButton = angular.element($document[0].querySelector("#" + scope.closeButton + ""));
+      var flyoutMenu = angular.element($document[0].querySelector("#" + scope.flyoutMenu + ""));
+      var menuButton = angular.element($document[0].querySelector("#" + scope.menuButton + ""));
+
+      menuButton.on("click", toggle);
+      closeButton.on("click", toggle);
+      setCss();
+
+      function setCss() {
+        flyoutMenu.css({ left: menuService.left });
+      }
+
+      function toggle() {
+        if (menuService.left !== 0) {
+          menuService.left = 0;
+        } else {
+          menuService.left = -300 + "px";
         }
+
+        body.toggleClass("toggled");
+        menuButton.toggleClass("active");
+        setCss();
       }
     }
-    
+  }
+})();
+
+/* eslint-disable */
+(function() {
+   "use strict"
+
+    angular.module("IE.crfMap")
+    .controller("crfMapCtrl", crfMapCtrl);
+
     crfMapCtrl.$inject = ["$scope", "$timeout", "$q", "$rootScope", "crfMapService"];
     /* @ngInject */
     function crfMapCtrl($scope, $timeout, $q, $rootScope, crfMapService) {
@@ -90,7 +67,8 @@
       $scope.changeAddress = changeAddress;
       $scope.closeDetails = closeDetails;
       $scope.loadTravelRadius = loadTravelRadius;
-      $scope.getFilters = getFilters;
+      $scope.getFiltersNoCategory = getFiltersNoCategory;
+      $scope.getFiltersWithCategory = getFiltersWithCategory;
       $scope.updateFilters = updateFilters;
       $scope.createMap = createMap;
       $scope.createFeatureLayer = createFeatureLayer;
@@ -128,38 +106,6 @@
       $scope.sortType = "attributes.Time"
       $scope.search= "";
       $scope.updateAddress = updateAddress;
-      self.rawFilters = [
-        {
-          name: "Food-Nutrition",
-          expanded: false,
-          filters: [
-            "Food Pantries",
-            "Food Vouchers",
-            "Community Meals",
-            "Congregate Meals/Nutrition Sites",
-            "Home Delivered Meals",
-            "Soup Kitchens",
-            "SNAP",
-            "WIC",
-            "Other"
-          ]
-        },
-        {
-          name: "Transportation",
-          expanded: false,
-          filters: [
-            "Medical Appointment Transportation",
-            "Senior Ride Programs",
-            "Disability Related Transportation",
-            "General Paratransit/Community Ride Programs",
-            "Transportation Expense Assistance",
-            "Travel Training",
-            "Senior Center Bus Services",
-            "Car Sharing Programs",
-            "Other"
-          ]
-        }
-      ];
 
 
       function init() {
@@ -181,7 +127,7 @@
 
       function chooseRoute() {
         if($scope.features.point) {
-          require(["esri/geometry/Point"], 
+          require(["esri/geometry/Point"],
           function(Point) {
             var point = new Point($scope.features.point.x, $scope.features.point.y);
             $scope.map.centerAndZoom(point, 14);
@@ -195,7 +141,7 @@
           if (newProvider) {
             var address = newProvider.ADR_LN_1_TXT + ", " + newProvider.CTY_NM + ", " + newProvider.ST + " " + newProvider.ZIP;
             crfMapService.centerMap(address, $scope.member, $scope.map, $scope.features.countyServed).then(success2, fail);
-          }          
+          }
           if (newProvider && newMember.provider == null) {
             $scope.centerMap(newMember.needs[0].addresses[0], $scope.member, $scope.map, $scope.features.countyServed).then(success3, fail);
           }
@@ -203,16 +149,33 @@
 
         function success1(response) {
           $scope.member = response;
-          var defExp = crfMapService.getProviders(newMember.needs[0].details, $scope.member.locationdetails);
+          var defExp;
+          if ($scope.features.flyoutmenu) {
+            if ($scope.filters) {
+              defExp = crfMapService.getProvidersNoLocation($scope.filters);
+            }
+          } else {
+            defExp = crfMapService.getProviders(newMember.needs[0].details, $scope.member.locationdetails);
+          }
           $scope.show = false;
           $scope.travelOptions.selected = false;
-          $scope.inputAddress = newMember.needs[0].addresses[0].ADR_LN_1_TXT + " " + newMember.needs[0].addresses[0].ADR_LN_2_TXT + ", " + newMember.needs[0].addresses[0].CTY_NM + ", " + newMember.needs[0].addresses[0].ST + " " + newMember.needs[0].addresses[0].ZIP;
+          $scope.inputAddress = newMember.needs[0].addresses[0].ADR_LN_1_TXT + (newMember.needs[0].addresses[0].ADR_LN_2_TXT ? " " + newMember.needs[0].addresses[0].ADR_LN_2_TXT : "") + ", " + newMember.needs[0].addresses[0].CTY_NM + ", " + newMember.needs[0].addresses[0].ST + " " + newMember.needs[0].addresses[0].ZIP;
 
+          if(typeof defExp == "undefined") {
+            defExp = $scope.resourcesLayer.getDefinitionExpression();
+          }
           $scope.createFeatureLayer(defExp);
         }
         function success2(response) {
             $scope.member = response;
-            var defExp = crfMapService.getProviders(newMember.needs[0].details, $scope.member.locationdetails);
+            var defExp;
+            if ($scope.features.flyoutmenu) {
+              if ($scope.filters) {
+                defExp = crfMapService.getProvidersNoLocation($scope.filters);
+              }
+            } else {
+              defExp = crfMapService.getProviders(newMember.needs[0].details, $scope.member.locationdetails);
+            }
             $scope.show = true;
 
             crfMapService.getProviderById(newProvider).then(function(response) {
@@ -240,13 +203,16 @@
                 });
               });
             });
-            
+
+            if(typeof defExp == "undefined") {
+              defExp = $scope.resourcesLayer.getDefinitionExpression();
+            }
             $scope.createFeatureLayer(defExp);
           }
 
           function success3(response) {
               $scope.member = response;
-              $scope.inputAddress = newMember.needs[0].addresses[0].ADR_LN_1_TXT + " " + newMember.needs[0].addresses[0].ADR_LN_2_TXT + ", " + newMember.needs[0].addresses[0].CTY_NM + ", " + newMember.needs[0].addresses[0].ST + " " + newMember.needs[0].addresses[0].ZIP;
+              $scope.inputAddress = newMember.needs[0].addresses[0].ADR_LN_1_TXT + (newMember.needs[0].addresses[0].ADR_LN_2_TXT ? " " + newMember.needs[0].addresses[0].ADR_LN_2_TXT : "") + ", " + newMember.needs[0].addresses[0].ST + " " + newMember.needs[0].addresses[0].ZIP;
               $scope.show = false;
               $scope.travelOptions.selected = false;
             }
@@ -279,7 +245,7 @@
 
         }
       }
-      
+
       function closeDetails(show) {
         $scope.show = show;
       }
@@ -287,11 +253,14 @@
       function createMap() {
         var deferred = $q.defer();
 
-        require(["esri/map", "esri/layers/FeatureLayer", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/symbols/SimpleFillSymbol", "esri/Color", "esri/renderers/SimpleRenderer", "esri/symbols/PictureMarkerSymbol", "esri/InfoTemplate", "esri/graphic", "esri/geometry/Point", "esri/tasks/FeatureSet", "esri/tasks/ServiceAreaParameters", "esri/tasks/ServiceAreaTask", "esri/layers/GraphicsLayer"], 
+        require(["esri/map", "esri/layers/FeatureLayer", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/symbols/SimpleFillSymbol", "esri/Color", "esri/renderers/SimpleRenderer", "esri/symbols/PictureMarkerSymbol", "esri/InfoTemplate", "esri/graphic", "esri/geometry/Point", "esri/tasks/FeatureSet", "esri/tasks/ServiceAreaParameters", "esri/tasks/ServiceAreaTask", "esri/layers/GraphicsLayer"],
         function getMap(Map, FeatureLayer, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, Color, SimpleRenderer, PictureMarkerSymbol, InfoTemplate, Graphic, Point, FeatureSet, ServiceAreaParameters, ServiceAreaTask, GraphicsLayer) {
           var template = new InfoTemplate();
           if($scope.features.flyoutmenu) {
             crfMapService.attributes.options.sliderPosition = "top-right";
+            if($scope.features.travelRadius) {
+              crfMapService.attributes.options.sliderPosition = "bottom-right";
+            }
           }
           $scope.map = new Map("map", crfMapService.attributes.options);
           crfMapService.loadSearchWidget($scope.map);
@@ -300,17 +269,26 @@
           } else {
             var mapmode = FeatureLayer.MODE_ONDEMAND;
           }
-          
+
+          var height = $("crf-map").parent().height();
+          if(height == 0) {
+            height = window.innerHeight;
+          }
+          $("#container").height(height);
+          $("#map").height(height - 110);
+          $("#listcontainer").height(height - 110);
+
           // resourcesLayer properties
           // $scope.resourcesLayer = new FeatureLayer("https://healthstate-stg.optum.com/arcgis/rest/services/crf/OCRF_LocationsFlat_repl/MapServer/0", {
-          $scope.resourcesLayer = new FeatureLayer("https://gis.optum.com/arcgis/rest/services/OCRF/ResourceLocations/MapServer/0", {  
+          $scope.resourcesLayer = new FeatureLayer("https://gis.optum.com/arcgis/rest/services/OCRF/ResourceLocations/MapServer/0", {
             id: "resources",
-            mode: mapmode,
+            mode: FeatureLayer.MODE_AUTO,
             infoTemplate: template,
-            outFields: ["*"]
+            outFields: ["*"],
+            definitionExpression: "1=2"
           });
 
-          var pms = new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/master/pin_default.png", 18, 25);
+          var pms = new PictureMarkerSymbol("https://resourcefinder-stg.optum.com/app/api/widget/pin_default.png", 18, 25);
           var renderer = new SimpleRenderer(pms);
           $scope.resourcesLayer.setSelectionSymbol(pms);
           $scope.resourcesLayer.setRenderer(renderer);
@@ -332,6 +310,7 @@
                 $scope.visibleResources.forEach(function(Resource) {
                   crfMapService.calculateDistanceAndTime($scope.member.point, Resource);
                 });
+                //crfMapService.calculateDistanceAndTime($scope.member.point, $scope.visibleResources);
               }
             }
           })
@@ -343,14 +322,16 @@
                 $scope.visibleResources.forEach(function(Resource) {
                   crfMapService.calculateDistanceAndTime($scope.member.point, Resource);
                 });
+                //crfMapService.calculateDistanceAndTime($scope.member.point, $scope.visibleResources);
               }
             } else if ($scope.visibleResources.length !== 0) {
               $scope.visibleResources.forEach(function(Resource) {
                   crfMapService.calculateDistanceAndTime($scope.features.point, Resource);
               });
+              //crfMapService.calculateDistanceAndTime($scope.member.point, $scope.visibleResources);
             }
           })
-          
+
           $scope.map.on("click", function(evt) {
             if (!evt.graphic) {
               return;
@@ -360,15 +341,22 @@
           });
 
           $scope.map.on("extent-change", function(evt) {
-            if($scope.features.point) {
-              require(["esri/tasks/query", "esri/layers/FeatureLayer"], 
+            if($scope.features.flyoutmenu && $scope.filters) {
+              require(["esri/tasks/query", "esri/layers/FeatureLayer"],
               function(Query, FeatureLayer) {
                 var defExp = crfMapService.getProvidersNoLocation($scope.filters);
-                var query = new Query();
-                query.where = defExp;
-                query.geometry = $scope.map.extent;
-                var featureLayer = $scope.resourcesLayer;
-                featureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW);
+                $scope.resourcesLayer.setDefinitionExpression(defExp);
+                // var query = new Query();
+                // query.where = defExp;
+                // query.geometry = $scope.map.extent;
+                // var featureLayer = $scope.resourcesLayer;
+                // if ($scope.filters.length == 0) {
+                //   $scope.resourcesLayer.setDefinitionExpression("1=2");
+                // } else {
+                //   $scope.resourcesLayer.setDefinitionExpression("");
+                //   featureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW);
+                // }
+                console.log($scope.resourcesLayer.getDefinitionExpression());
               });
             }
             // $scope.createFeatureLayer(defExp);
@@ -384,9 +372,12 @@
       }
 
       function createFeatureLayer(defExp) {
-        require(["esri/graphic", "esri/symbols/PictureMarkerSymbol", "esri/geometry/Point", "esri/tasks/FeatureSet", 
-        "esri/layers/FeatureLayer", "esri/renderers/SimpleRenderer"], 
+        require(["esri/graphic", "esri/symbols/PictureMarkerSymbol", "esri/geometry/Point", "esri/tasks/FeatureSet",
+        "esri/layers/FeatureLayer", "esri/renderers/SimpleRenderer"],
         function(Graphic, PictureMarkerSymbol, Point, FeatureSet, FeatureLayer, SimpleFillSymbol, Color, SimpleRenderer) {
+          if(typeof defExp == "undefined") {
+            defExp = "1=2";
+          }
           if ($scope.map.graphics) {
             $scope.map.graphics.clear();
             $scope.map.getLayer("travelRadius").clear();
@@ -399,27 +390,27 @@
 
       function loadTravelRadius(member, type, minutes) {
         $scope.travelSlider.options.disabled = true;
-        
+
         if (type) {
           $scope.travelOptions.type = type;
         }
-        
+
         if (minutes) {
           $scope.travelSlider.value = minutes;
         }
-        
+
         crfMapService.loadTravelRadius($scope.map, $scope.member, $scope.travelSlider.value, $scope.travelOptions.type).then(success, fail);
-        
+
         function success() {
           $scope.travelSlider.options.disabled = false;
         }
-        
+
         function fail() {
           $scope.travelSlider.options.disabled = false;
           window.alert("Member's address could not be located.");
         }
       }
-      
+
       function provider(provider) {
         var requestedData = {
           transactionId: $scope.member.transactionId,
@@ -459,8 +450,8 @@
               ]
             }
           ]
-        };      
-        $scope.callback()(requestedData);        
+        };
+        $scope.callback()(requestedData);
       }
 
       function toggle(view) {
@@ -471,14 +462,21 @@
       function toggleFilter(filter) {
         filter.active = !filter.active;
         $scope.updateFilters();
-        require(["esri/tasks/query", "esri/layers/FeatureLayer"], 
+        require(["esri/tasks/query", "esri/layers/FeatureLayer"],
         function(Query, FeatureLayer) {
           var defExp = crfMapService.getProvidersNoLocation($scope.filters);
-          var query = new Query();
-          query.where = defExp;
-          query.geometry = $scope.map.extent;
-          var featureLayer = $scope.resourcesLayer;
-          featureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW);
+          $scope.resourcesLayer.setDefinitionExpression(defExp);
+          // var query = new Query();
+          // query.where = defExp;
+          // query.geometry = $scope.map.extent;
+          // var featureLayer = $scope.resourcesLayer;
+          // if ($scope.filters.length == 0) {
+          //   $scope.resourcesLayer.setDefinitionExpression("1=2");
+          // } else {
+          //   $scope.resourcesLayer.setDefinitionExpression("");
+          //   featureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW);
+          // }
+          console.log($scope.resourcesLayer.getDefinitionExpression());
         });
       }
 
@@ -497,26 +495,26 @@
         }
       }
 
-      function getFilters(category) {
+      function getFiltersWithCategory(category, tenant) {
         var filters = [];
 
-        return crfMapService.getTaxonomy().then(success, fail);
+        return crfMapService.getTaxonomy(tenant).then(success, fail);
 
         function success(response) {
-          response.Activ8.forEach(function(rawFilter) {
-            if(rawFilter.category.toLowerCase() == category.toLowerCase()) {
+          response.taxonomies.forEach(function(rawFilter) {
+            if(rawFilter.serviceCategoryName.toLowerCase() == category.toLowerCase()) {
               var newFilter = {
-                name: rawFilter.category,
+                name: rawFilter.serviceCategoryName,
                 expanded: true,
                 filters: []
               };
 
-              rawFilter.serviceTypes.forEach(function(filter) {
+              rawFilter.serviceTypeList.forEach(function(filter) {
                 newFilter.filters.push({
                   id: filter.id,
-                  displayName: filter.displayName,
-                  filterName: filter.displayName,
-                  AirsCodes: filter.AirsCodes,
+                  displayName: filter.serviceTypeName,
+                  filterName: filter.serviceTypeName,
+                  airsCodes: filter.airsCodes,
                   active: true
                 });
               });
@@ -528,45 +526,55 @@
         }
 
         function fail() {}
-        
-        // self.rawFilters.forEach(function(rawFilter) {
-        //   if(rawFilter.name.toLowerCase() == category.toLowerCase()) {
-        //     var newFilter = {
-        //       name: rawFilter.name,
-        //       expanded: true,
-        //       filters: []
-        //     };
+      }
 
-        //     rawFilter.filters.forEach(function(filter) {
-        //       newFilter.filters.push({
-        //         displayName: filter,
-        //         filterName: filter,
-        //         active: true
-        //       });
-        //     });
+      function getFiltersNoCategory(tenant) {
+        var filters = [];
 
-        //     filters.push(newFilter);
-        //   }
-        // });
-        // return filters;
+        return crfMapService.getTaxonomy(tenant).then(success, fail);
+
+        function success(response) {
+          response.taxonomies.forEach(function(rawFilter) {
+            var newFilter = {
+              name: rawFilter.serviceCategoryName,
+              expanded: false,
+              filters: []
+            };
+
+            rawFilter.serviceTypeList.forEach(function(filter) {
+              newFilter.filters.push({
+                id: filter.id,
+                displayName: filter.serviceTypeName,
+                filterName: filter.serviceTypeName,
+                airsCodes: filter.airsCodes
+                // active: true
+              });
+            });
+
+            filters.push(newFilter);
+          });
+          return filters;
+        }
+
+        function fail() {}
       }
 
       function showDetails(feature, show) {
         var scope = $rootScope.$new(true);
         scope.selectProvider = selectProvider;
         scope.showDetails = showDetails;
-        
+
         $scope.attrs = feature.attributes;
         if(feature.attributes.Shape_Area || feature.attributes.Shape_Length) {
           $scope.show = false
         } else {
           $scope.show = show;
         }
-        
+
         if(!$rootScope.$$phase) {
           $rootScope.$digest();
         }
-        
+
         function selectProvider(provider) {
           $scope.provider(provider);
         }
@@ -574,7 +582,7 @@
 
       function showBack(map, feature) {
         var $scope = $rootScope.$new(true);
-        
+
         var el = $compile()($scope);
         map.infoWindow.setFeatures([feature]);
         map.infoWindow.show(feature.geometry);
@@ -584,7 +592,7 @@
 
         contentElement.html("");
         contentElement.append(el);
-      }   
+      }
 
       function updateFilters() {
         var newFilters = [];
@@ -601,12 +609,238 @@
         $scope.filters = newFilters;
       }
     }
-    
+})();
+/* eslint-disable */
+(function() {
+   "use strict"
+
+    angular.module("IE.crfMap")
+    .directive("crfMap", crfMap)
+    .run(runMap);
+
+    crfMap.$inject = ["$compile", "$document", "$rootScope", "$q", "crfMapService"];
+    /* @ngInject */
+    function crfMap($compile, $document, $rootScope, $q, crfMapService) {
+      return {
+        restrict: "E",
+        scope: {
+          member: "=",
+          crfProvider: "=",
+          callback: "&",
+          features: "=?"
+        },
+        templateUrl: function(elem, attrs) {
+          //noinspection JSUnresolvedVariable
+          return 'mapTpl.html';
+        },
+        controller: "crfMapCtrl",
+        controllerAs: "c",
+        link: postLink
+      };
+
+      function postLink($scope, ele, attrs, ctrl) {
+        $scope.$watchGroup(["crfProvider", "member"], function(newVal, oldVal) {
+          $scope.features = setInitialFeatures($scope.features);
+          $scope.init();
+        });
+
+        function setInitialFeatures(features) {
+          if(typeof features == "undefined") {
+            $scope.features = {
+              initialview: "map",
+              travelRadius: true,
+              flyoutmenu: false,
+              addressChange: true,
+              countyServed: false,
+              selectProvider: true
+            }
+          } else {
+            if(typeof $scope.features.initialview == "undefined") {
+              $scope.features.initialview = "map"
+            }
+            if(typeof $scope.features.travelRadius == "undefined") {
+              $scope.features.travelRadius = true;
+            }
+            if(typeof $scope.features.flyoutmenu == "undefined") {
+              $scope.features.flyoutmenu = false;
+            }
+            if(typeof $scope.features.addressChange == "undefined") {
+              $scope.features.addressChange = true;
+            }
+            if(typeof $scope.features.countyServed == "undefined") {
+              $scope.features.countyServed = false;
+            }
+            if(typeof $scope.features.selectProvider == "undefined") {
+              $scope.features.selectProvider = true;
+            }
+            $scope.features.view = $scope.features.initialview;
+            $scope.features.travel = $scope.features.travelRadius;
+
+            if($scope.features.flyoutmenu) {
+              if($scope.features.category) {
+                $scope.getFiltersWithCategory($scope.features.category, $scope.features.tenant).then(function(response) {
+                  $scope.filterCategories = response;
+                  $scope.updateFilters();
+                });
+              } else {
+                $scope.getFiltersNoCategory($scope.features.tenant).then(function(response) {
+                  $scope.filterCategories = response;
+                });
+              }
+            }
+          }
+          return $scope.features;
+        }
+      }
+    }
+
+    runMap.$inject = ["$templateCache"];
+    function runMap($templateCache) {
+      'use strict';
+
+      $templateCache.put('mapTpl.html',
+        "<div id='flyoutmenu-wrapper' ng-show='features.flyoutmenu && features.view == \"map\"' class='toggled'>" +
+          "<div class='hsVerticalNavigation nopadding'>" +
+            "<uib-accordion close-others='false'>" +
+              "<uib-accordion-group is-open='true' panel-class='panel-no-padding'>" +
+                "<ul class='tk-vnav'>" +
+                  "<li style='border: none' ng-repeat='cat in filterCategories'>" +
+                    "<div class='tk-vnav-name' ng-class='{collapsed : !cat.expanded}' ng-click='cat.expanded = !cat.expanded; rc.getServiceTypeCount(cat.expanded, $index, cat.filters)'>" +
+                      "{{cat.name}}" +
+                      "<span ng-class='cat.expanded ? \"cux-icon-arrow_down\" : \"cux-icon-arrow_right\"' class='pull-right'></span>" +
+                    "</div>" +
+                    "<ul class='tk-vnav'>" +
+                      "<li ng-repeat='filter in cat.filters' class='tk-vnav-filters-list'>" +
+                        "<div ng-click='toggleFilter(filter)' class='tk-vnav-nested-item nested filteritems'>" +
+                          "<div class='tk-vnav-nested-item-name'>{{filter.displayName}}</div>" +
+                          "<div class='tk-vnav-nested-item-icon'>" +
+                            "<span ng-class='{filter:filter.active}' class='cux-icon-checkmark_action pull-right'></span>" +
+                          "</div>" +
+                        "</div>" +
+                      "</li>" +
+                    "</ul>" +
+                  "</li>" +
+                "</ul>" +
+              "</uib-accordion-group>" +
+            "</uib-accordion>" +
+          "</div>" +
+        "</div>" +
+        "<div id='page-content-wrapper' ng-class='{noflyout: !features.flyoutmenu}' class='toggled'>" +
+          "<div id='container'>" +
+              "<div id='mapview' ng-show='features.view == \"map\"'>" +
+                "<div id='mapview-header'>" +
+                  "<p class='largerIcon'> {{visibleResources.length || 0}} Locations</p>" +
+                  // "<div id='search'></div>" +
+                  "<form  ng-show='features.addressChange' ng-submit='changeAddress(inputAddress)' id='client-address-input'>" +
+                    "<input ng-model='inputAddress' type='text' class='form-control' id='inputAddress' placeholder='Enter address'/>" +
+                  "</form>" +
+                "</div>" +
+                "<div id='mapcontrols'>" +
+                  "<div id='toggle'>" +
+                    "<button id='toggle-button' ng-click='toggle(\"list\")'>List View</button>" +
+                  "</div>" +
+                "</div>" +
+                "<div id='map' ng-class='{mapnoflyout: !features.flyoutmenut}'></div>" +
+                "<div id='travel' ng-show='features.travel' ng-class='travelOptions.selected ? \"travel-open\" : \"travel-minimized\"'>" +
+                  "<div ng-class='{\"spinner\":travelSlider.options.disabled}'></div>" +
+                  "<img style='vertical-align: baseline;' ng-click='travelOptions.selected = !travelOptions.selected; loadTravelRadius(member, \"drive\", travelSlider.value)' ng-if='travelOptions.selected == false' src='https://resourcefinder-stg.optum.com/app/api/widget/radius_pin_small.png' width='40' height='40'>" +
+                  "<img id='travel-icons' ng-class='{\"travel-type-icon\":!travelSlider.options.disabled, \"travel-type-icon-disabled\":travelSlider.options.disabled}' ng-click='loadTravelRadius(member, \"drive\", travelSlider.value)' ng-if='travelOptions.selected == true && travelOptions.type != \"drive\"' src='https://resourcefinder-stg.optum.com/app/api/widget/drive_off.png'>" +
+                  "<img id='travel-icons' ng-class='{\"travel-type-icon\":!travelSlider.options.disabled, \"travel-type-icon-disabled\":travelSlider.options.disabled}' ng-if='travelOptions.selected == true && travelOptions.type == \"drive\"' src='https://resourcefinder-stg.optum.com/app/api/widget/drive_on.png'>" +
+                  "<img id='travel-icons' ng-class='{\"travel-type-icon-walk\":!travelSlider.options.disabled, \"travel-type-icon-walk-disabled\":travelSlider.options.disabled}' ng-click='loadTravelRadius(member, \"walk\", travelSlider.value)' ng-if='travelOptions.selected == true && travelOptions.type != \"walk\"' src='https://resourcefinder-stg.optum.com/app/api/widget/walk_off.png' height='32'>" +
+                  "<img id='travel-icons' ng-class='{\"travel-type-icon-walk\":!travelSlider.options.disabled, \"travel-type-icon-walk-disabled\":travelSlider.options.disabled}' ng-if='travelOptions.selected == true && travelOptions.type == \"walk\"' src='https://resourcefinder-stg.optum.com/app/api/widget/walk_on.png' height='32'>" +
+                  "<div id='slidercontainer'>" +
+                    "<rzslider rz-slider-model='travelSlider.value' rz-slider-options='travelSlider.options'></rzslider>" +
+                  "</div>" +
+                  "<img style='vertical-align: baseline;' ng-class='{\"travel-toggle-icon\":!travelSlider.options.disabled, \"travel-toggle-icon-disabled\":travelSlider.options.disabled}' ng-click='travelOptions.selected = !travelOptions.selected; clearTravelRadius(map)' ng-if='travelOptions.selected == true' src='https://resourcefinder-stg.optum.com/app/api/widget/radius_pin_small.png' width='40' height='40'>" +
+                "</div>" +
+                "<div ng-class='{detailsviewpadded: features.flyoutmenu}' id='detailsview' ng-if='show'>" +
+                  "<div class='detailsview-header'>" +
+                    "<span class='detailsview-name'>{{attrs.Name}}</span><span ng-click='closeDetails(false)' class='close-list'>X</span>" +
+                  "</div><br/>" +
+                  "Category: {{attrs.ServiceCategory}}<br/>" +
+                  "Service Type: {{attrs.ServiceType}}<br/>" +
+                  "Service Description: {{attrs.ServiceDesc}}<br/><br/>" +
+                  "Address: {{attrs.AddressSingle}}<br/>" +
+                  "<span ng-if='attrs.Phone'>Phone: <a href='tel:{{attrs.Phone}}'>{{attrs.Phone}}</a><br/></span>" +
+                  "<span ng-if='attrs.E_Mail'>Email: {{attrs.E_Mail}}<br/></span>" +
+                  "<span ng-if='attrs.Hours'>Hours: {{attrs.Hours}}<br/></span>" +
+                  "<span ng-if='attrs.Website'>Website: {{attrs.Website}}<br/></span>" +
+                  "<button ng-if='features.selectProvider' class='provider-select' ng-click='provider(attrs)'>Select Provider</button>" +
+                "</div>" +
+              "</div>" +
+              "<div id='listview-wrapper' ng-show='features.view == \"list\"'>" +
+                "<div id='listview-header'>" +
+                  "<p class='largerIcon'> {{visibleResources.length || 0}} Locations</p>" +
+                  "<input ng-model='search.attributes.$' type='text' class='form-control searchFilter' placeholder='Search'/>" +
+                  "<form ng-show='features.addressChange' ng-submit='updateAddress(inputAddress)' id='client-address-input'>" +
+                    "<input ng-model='inputAddress' type='text' class='form-control' id='inputAddressList' placeholder='Enter address'/>" +
+                  "</form>" +
+                "</div>" +
+                "<div id='listcontrols'>" +
+                  "<div id='toggle'>" +
+                    "<select id='sort' ng-model='sortType'>" +
+                      "<option ng-click='sortType = \"attributes.Name\"' value='attributes.Name'>Name</option>" +
+                      "<option ng-click='sortType = \"attributes.Time\"' value='attributes.Time'>Time</option>" +
+                      "<option ng-click='sortType = \"attributes.Distance\"' value='attributes.Distance'>Distance</option>" +
+                    "</select>" +
+                    "<button id='toggle-button' ng-click='toggle(\"map\")'>Map View</button>" +
+                  "</div>" +
+                "</div>" +
+                "<div id='listcontainer'>" +
+                  "<div id='listtable'>" +
+                    "<table class='table table-listview'>" +
+                      "<thead style='text-align: center'>" +
+                        "<th width='33.3%'>Name</th>"+
+                        "<th width='33.3%'>Address</th>"+
+                        "<th width='33.3%'>Distance | Time</th>"+
+                      "</thead>" +
+                      "<tbody ng-repeat='resource in visibleResources | orderBy:sortType | filter:search as resources'>" +
+                        "<tr>" +
+                          "<td><h6 class='listview-h1'><span>{{resource.attributes.Name}}</span></h6></td>" +
+                          "<td><p>{{resource.attributes.AddressSingle}}</p></td>" +
+                          "<td class='distance' ng-if='resource.attributes.Distance'>" +
+                            "{{resource.attributes.Distance | number:2}} mi | {{resource.attributes.Time}} minutes" +
+                          "</td>" +
+                          "<td ng-if='!resource.attributes.Distance'>Unknown distance</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                          "<td><button ng-if='features.selectProvider' class='provider-select' ng-click='provider(resource.attributes)'>Select Provider</button></td>" +
+                          "<td>Phone: {{resource.attributes.Phone || 'Not found'}}</td>" +
+                          "<td></td>" +
+                        "</tr>" +
+                      "</tbody>" +
+                      "<tbody ng-if='resources.length == 0'>" +
+                        "<tr>" +
+                          "<td width='100%'>" +
+                            "No Resources Found" +
+                          "</td" +
+                        "</tr" +
+                      "</tbody>" +
+                    "</table>" +
+                  "</div>" +
+                "</div>" +
+              "</div>" +
+            "</div>" +
+            "<flyoutmenu body='page-content-wrapper' flyout-menu='flyoutmenu-wrapper'" +
+            "menu-button='flyoutmenu-menuButton' close-button='flyoutmenu-closeButton'>" +
+            "</flyoutmenu>" +
+          "</div>"
+      );
+    }
+})();
+
+/* eslint-disable */
+(function() {
+   "use strict"
+
+    angular.module("IE.crfMap")
+    .service("crfMapService", crfMapService);
+
     crfMapService.$inject = ["$compile", "$document", "$http", "$q", "$rootScope", "$timeout"];
     /* @ngInject */
     function crfMapService($compile, $document, $http, $q, $rootScope, $timeout) {
       var self = this;
-      
+
       self.attributes = {
         id: "map",
         options: {
@@ -618,14 +852,14 @@
         resourcesOptions: {
           id: "resources",
           outFields: ["*"]
-        },      
+        },
         travelRadiusOptions: {
           id: "travelRadius",
           address: "13625 Technology Dr, Eden Prairie, MN 55346",
           lastTravelType: undefined,
           lastTravelMinutes: undefined,
           visible: false
-        }      
+        }
       };
       self.calculateDistanceAndTime = calculateDistanceAndTime;
       self.clearTravelRadius = clearTravelRadius;
@@ -660,7 +894,7 @@
           var addressPoint = new Point(address.x, address.y);
           var distParams = new DistanceParameters();
           var geometryService = new GeometryService("https://gis.optum.com/arcgis/rest/services/Utilities/Geometry/GeometryServer");
-          
+
           var resourcePoint = new Point(resource.geometry.x, resource.geometry.y);
           if (Math.abs(resource.geometry.x) > 360) {
             var latlng = webMercatorUtils.xyToLngLat(resource.geometry.x, resource.geometry.y);
@@ -674,19 +908,19 @@
           distParams.geometry2 = resourcePoint;
           distParams.geodesic = true;
           distParams.f = "json";
-          
+
           routeParams.stops = new FeatureSet();
           routeParams.stops.features.push(new Graphic(addressPoint));
           routeParams.stops.features.push(new Graphic(resourcePoint));
           routeParams.directionsLengthUnits = Units.MILES;
-          
+
           /** Retrieve distance and set it in the resource attributes object */
           geometryService.distance(distParams, function(distance) {
             $timeout(function() {
               resource.attributes.Distance = distance;
             });
           });
-          
+
           /** Retrieve time and set it in the resource attributes object */
           routeTask.solve(routeParams, function(time) {
             $timeout(function() {
@@ -694,6 +928,79 @@
             });
           });
         });
+        // var params;
+        // require([
+        //   "dojo/dom",
+        //   "dojo/_base/array",
+        //   "esri/Color",
+        //   "dojo/parser",
+        //   "dijit/registry",
+
+        //   "esri/urlUtils",
+        //   "esri/map",
+        //   "esri/lang",
+        //   "esri/graphic",
+        //   "esri/InfoTemplate",
+        //   "esri/layers/GraphicsLayer",
+        //   "esri/renderers/SimpleRenderer",
+
+        //   "esri/geometry/Point",
+        //   "esri/tasks/FeatureSet",
+
+        //   "esri/tasks/ClosestFacilityTask",
+        //   "esri/tasks/ClosestFacilityParameters",
+
+        //   "esri/symbols/SimpleMarkerSymbol",
+        //   "esri/symbols/SimpleLineSymbol",
+
+        //   "dijit/form/ComboBox",
+        //   "dijit/layout/BorderContainer",
+        //   "dijit/layout/ContentPane"
+        // ], function(
+        //   dom, array, Color, parser, registry,
+        //   urlUtils, Map, esriLang, Graphic, InfoTemplate, GraphicsLayer, SimpleRenderer,
+        //   Point, FeatureSet,
+        //   ClosestFacilityTask, ClosestFacilityParameters,
+        //   SimpleMarkerSymbol, SimpleLineSymbol
+        // ) {
+        //   var closestFacilityTask;
+        //   params = new ClosestFacilityParameters();
+        //   params.impedenceAttribute= "Miles";
+        //   params.defaultCutoff= 100.0;
+        //   params.returnIncidents=false;
+        //   params.defaultTargetFacilityCount= 1000;
+        //   params.returnRoutes=true;
+        //   params.returnDirections=true;
+
+        //   var facilities = new FeatureSet();
+        //   var facility, point;
+        //   array.forEach(resources, function(resource) {
+        //     facility = new Graphic();
+        //     point = new Point(resource.attributes.Longitude, resource.attributes.Latitude);
+        //     facility.setGeometry(point);
+        //     facility.setAttributes({"Name": resource.attributes.Name})
+        //     facilities.features.push(facility);
+        //   })
+        //   params.facilities = facilities;
+        //   //params.outSpatialReference = 4326;
+
+        //   closestFacilityTask = new ClosestFacilityTask("https://gis.optum.com/arcgis/rest/services/Routing/ClosestFacilities/NAServer/FindClosestFacility");
+
+        //   var location = new Graphic(address);
+        //   var features = [];
+        //   features.push(location);
+        //   var incidents = new FeatureSet();
+        //   incidents.features = features;
+        //   params.incidents = incidents;
+
+        //   //solve
+        //   closestFacilityTask.solve(params, function(solveResult){
+        //     array.forEach(solveResult.routes, function(route, index){
+        //       resources[0].attributes.Distance = route.attributes.Shape_Length;
+        //       resources[0].attributes.Time = route.attributes.Total_TravelTime;
+        //     });
+        //   });
+        // });
       }
 
       function clearTravelRadius(map) {
@@ -702,17 +1009,17 @@
       }
 
       function centerMap(address, member, map, countyServed) {
-        
+
         var deferred = $q.defer();
 
         var memberPoint = self.geocode(address).then(success, fail);
-        
+
         function center(pt) {
             $timeout(function() {
               map.centerAndZoom(pt, 11);
             });
         }
-        
+
         function success(res) {
           member.point = res.point;
           center(res.point);
@@ -729,56 +1036,56 @@
 
           function fail(response) {}
         }
-        
+
         function fail(res) {
         }
 
         return deferred.promise;
       }
-      
+
       /**
        * Geocode address.
        */
       function geocode(address, extentMulti) {
         var deferred = $q.defer();
-        
+
         if (address instanceof Object) {
           address = address.ADR_LN_1_TXT + " " + address.ADR_LN_2_TXT + ", " + address.CTY_NM + ", " + address.ST + " " + address.ZIP;
         }
-        
+
         if (typeof address !== "string") {
           deferred.reject();
           return;
         }
-        
+
         require(["esri/tasks/locator"], function(Locator) {
           var locator = new Locator("https://gis.optum.com/arcgis/rest/services/USA/GeocodeServer");
           var locatorParams = {};
-          
+
           if (extentMulti && map.extent) {
             locatorParams.searchExtent = map.extent.expand(extentMulti);
           }
           locatorParams.address = {
             "SingleLine": address
           };
-          
+
           // geocode address to location X/Y
           locator.addressToLocations(locatorParams, function(res) {
             if (res.length === 0) {
               deferred.reject();
               return;
             }
-            
+
             deferred.resolve({
               point: res[0].location,
               address: address
             });
           });
         });
-        
+
         return deferred.promise;
       }
-      
+
       /**
        * Return the deferred map.
        */
@@ -802,16 +1109,16 @@
         };
 
         return $http.get("https://gis.optum.com/arcgis/rest/services/US_ReferenceGeography_nationlevel/MapServer/2/query", { params: qs }).then(success, fail);
-        
+
         function success(response) {
           return response.data;
         }
-        
+
         function fail(response) {
           return response.data;
-        }      
+        }
       }
-      
+
       function getProviderById(provider) {
         var qs = {
           where: "1=1",
@@ -829,16 +1136,16 @@
         };
 
         return $http.get("https://gis.optum.com/arcgis/rest/services/OCRF/ResourceLocations/MapServer/0/query", { params: qs }).then(success, fail);
-        
+
         function success(response) {
           return response.data;
         }
-        
+
         function fail(response) {
           return response.data;
-        }      
+        }
       }
-      
+
       function getProviders(details, locationdetails) {
         var serviceType = [];
         var qs = {
@@ -846,16 +1153,16 @@
           areawhere: ""
         };
         var defExp;
-        
+
         if (details[0].allowUpdate == false && details[0].providerId) {
           var str = "ObjectId = " + details[0].providerId;
           qs.objectIds = str;
         }
-        
+
         details.forEach(function(detail) {
           serviceType.push(mapData(detail.filter));
         });
-        
+
         if(Array.isArray(serviceType[0])) {
           serviceType[0].forEach(function(stype) {
             if (qs.filterwhere.length === 0) {
@@ -880,18 +1187,18 @@
 
         if (qs.objectIds) {
           if(qs.areawhere.length === 0) {
-            defExp = "(" + qs.filterwhere + ") AND (" + qs.objectIds + ")";
+            defExp = "(ValidationStatus LIKE '%Accept%') AND (" + qs.filterwhere + ") AND (" + qs.objectIds + ")";
           } else {
-            defExp = "(" + qs.filterwhere + ") AND (" + qs.objectIds + ") AND (" + qs.areawhere + ")";
+            defExp = "(ValidationStatus LIKE '%Accept%') AND (" + qs.filterwhere + ") AND (" + qs.objectIds + ") AND (" + qs.areawhere + ")";
           }
         } else {
           if(qs.areawhere.length === 0) {
-            defExp = "(" + qs.filterwhere + ")";
+            defExp = "(ValidationStatus LIKE '%Accept%') AND (" + qs.filterwhere + ")";
           } else {
-            defExp = "(" + qs.filterwhere + ") AND (" + qs.areawhere + ")";
+            defExp = "(ValidationStatus LIKE '%Accept%') AND (" + qs.filterwhere + ") AND (" + qs.areawhere + ")";
           }
         }
-        
+
         return defExp;
       }
 
@@ -903,10 +1210,10 @@
         var defExp;
         filters.forEach(function(filter) {
           if (qs.filterwhere.length === 0) {
-              if(filter.filter.AirsCodes.length === 1) {
-                qs.filterwhere = "(AIRSCode IN ('" + filter.filter.AirsCodes[0] + "'))"
+              if(typeof filter.filter.airsCodes == "string") {
+                qs.filterwhere = "(AIRSCode IN ('" + filter.filter.airsCodes + "'))"
               } else {
-                filter.filter.AirsCodes.forEach(function(code) {
+                filter.filter.airsCodes.forEach(function(code) {
                   if(codestring.length === 0) {
                     codestring += "'" + code +"'";
                   } else {
@@ -917,10 +1224,10 @@
                 codestring = "";
               }
           } else {
-            if(filter.filter.AirsCodes.length === 1) {
-                qs.filterwhere += " OR (AIRSCode IN ('" + filter.filter.AirsCodes[0] + "'))"
+            if(typeof filter.filter.airsCodes == "string") {
+                qs.filterwhere += " OR (AIRSCode IN ('" + filter.filter.airsCodes + "'))"
             } else {
-              filter.filter.AirsCodes.forEach(function(code) {
+              filter.filter.airsCodes.forEach(function(code) {
                 if(codestring.length === 0) {
                   codestring += "'" + code +"'";
                 } else {
@@ -937,14 +1244,14 @@
         } else {
           defExp = "(ValidationStatus LIKE '%Accept%') AND (" + qs.filterwhere + ")";
         }
-        
+
         return defExp;
       }
 
       function loadTravelRadius(map, member, minutes, travelType) {
         var deferred = $q.defer();
 
-        require(["esri/map", "esri/layers/FeatureLayer", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/symbols/SimpleFillSymbol", "esri/Color", "esri/renderers/SimpleRenderer", "esri/symbols/PictureMarkerSymbol", "esri/InfoTemplate", "esri/graphic", "esri/geometry/Point", "esri/tasks/FeatureSet", "esri/tasks/ServiceAreaParameters", "esri/tasks/ServiceAreaTask", "esri/layers/GraphicsLayer"], 
+        require(["esri/map", "esri/layers/FeatureLayer", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/symbols/SimpleFillSymbol", "esri/Color", "esri/renderers/SimpleRenderer", "esri/symbols/PictureMarkerSymbol", "esri/InfoTemplate", "esri/graphic", "esri/geometry/Point", "esri/tasks/FeatureSet", "esri/tasks/ServiceAreaParameters", "esri/tasks/ServiceAreaTask", "esri/layers/GraphicsLayer"],
         function(Map, FeatureLayer, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, Color, SimpleRenderer, PictureMarkerSymbol, InfoTemplate, Graphic, Point, FeatureSet, ServiceAreaParameters, ServiceAreaTask, GraphicsLayer) {
 
           if(typeof member.point == "undefined") {
@@ -957,46 +1264,46 @@
             deferred.resolve();
             return;
           }
-        
+
           if (minutes === 0) {
             minutes = self.attributes.travelRadiusOptions.lastTravelMinutes;
           }
-          
+
           var travelRadiusLayer = map.getLayer(self.attributes.travelRadiusOptions.id);
 
           if (travelType == 'walk') {
-            minutes = minutes / 4; 
+            minutes = minutes / 4;
           }
 
           var pointSymbol = new SimpleMarkerSymbol("diamond", 20,
             new SimpleLineSymbol("solid", new Color([88, 116, 152]), 2),
             new Color([88, 116, 152, 0.45])
           );
-          
+
           var location = new Graphic(member.point, pointSymbol);
-          
+
           var features = [];
           features.push(location);
-          
+
           var facilities = new FeatureSet();
           facilities.features = features;
-          
+
           var serviceAreaParams = new ServiceAreaParameters();
-          serviceAreaParams.outSpatialReference = map.spatialReference;          
+          serviceAreaParams.outSpatialReference = map.spatialReference;
           serviceAreaParams.defaultBreaks= [minutes];
           serviceAreaParams.returnFacilities = false;
           serviceAreaParams.facilities = facilities;
 
           var serviceAreaTask = new ServiceAreaTask("https://gis.optum.com/arcgis/rest/services/Routing/ServiceAreas/NAServer/GenerateServiceAreas");
 
-          //solve 
+          //solve
           serviceAreaTask.solve(serviceAreaParams, function(solveResult){
             var polygonSymbol = new SimpleFillSymbol(
-              "solid",  
+              "solid",
               new SimpleLineSymbol("solid", new Color([232, 104, 80]), 2),
               new Color([232, 104, 80, 0.25])
             );
-            
+
             solveResult.serviceAreaPolygons.forEach(function(serviceArea){
               serviceArea.setSymbol(polygonSymbol);
               travelRadiusLayer.clear();
@@ -1030,24 +1337,24 @@
             var travelRadiusLayer = new GraphicsLayer({
               id: self.attributes.travelRadiusOptions.id
             });
-            
+
             $q.all([self.attributes.resourcesDeferred.promise, self.attributes.suggestedDeferred.promise]).then(function() {
               map.addLayer(travelRadiusLayer, 1);
               travelRadiusLayer.setVisibility(self.attributes.travelRadiusOptions.visible);
-        
+
               travelRadiusLayer.on("click", function(evt) {
                 // travel radius polygon has attributes, but the central point does not.
                 if (evt.graphic.attributes) {
                   map.infoWindow.hide();
                   return;
                 }
-                
+
                 showAddressPopup(evt.graphic.geometry);
               });
             });
           });
         }
-        
+
         /**
          * Hide the map's popup window is not clicked on a graphic.
          */
@@ -1141,7 +1448,7 @@
 
         return {
           category: serviceCat,
-          value: serviceType, 
+          value: serviceType,
           field: field
         }
       }
@@ -1158,7 +1465,7 @@
             if (existingSearch) {
               existingSearch.destroy();
             }
-            
+
             sources.push({
               suggestionTemplate: "${Name}\n - ${ServiceType}",
               enableLabel: false,
@@ -1166,7 +1473,7 @@
               enableInfoWindow: false,
               exactMatch: false,
               featureLayer: new FeatureLayer(self.attributes.resourcesLayerUrl),
-              highlightSymbol: new PictureMarkerSymbol("https://rawgit.com/savtwo/esri-map/master/pin_default.png", 18, 25).setOffset(0, 9),
+              highlightSymbol: new PictureMarkerSymbol("https://resourcefinder-stg.optum.com/app/api/widget/pin_default.png", 18, 25).setOffset(0, 9),
               // suffix: "%' AND ValidationStatus LIKE '%Accept%'", // hack to modify sql string to accept State, could not get other search properties to work
               outFields: ["*"],
               placeholder: "Search Resources...",
@@ -1178,165 +1485,50 @@
               sources: sources
             }, searchId);
             search.startup();
-            
+
             // search.on("select-result", function(evt) {
             //   showDetails(evt.result.feature, evt.result.feature.geometry);
             // });
           });
       }
 
-      function getTaxonomy() {
-        return $http.get("translation.json").then(success, fail);
-        
+      function getTaxonomy(tenant) {
+        return $http.get("https://resourcefinder-stg.optum.com/app/api/widget/" + tenant).then(success, fail);
+        //return $http({method : 'GET', url : "/api/taxonomies/v1.0", headers : {SM_USER : "cgullick", 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded'}}).then(success, fail);
+
         function success(response) {
           return response.data;
         }
-        
+
         function fail(response) {
           return response.data;
-        }      
+        }
       }
     }
+})();
 
-    runMap.$inject = ["$templateCache"];
-    function runMap($templateCache) {
-      'use strict';
+(function() {
+  "use strict";
 
-      $templateCache.put('mapTpl.html',
-        "<div id='flyoutmenu-wrapper' ng-show='features.flyoutmenu && features.view == \"map\"' class='toggled'>" +
-          "<div id='flyoutmenu-closeButton' role='tab'>" +
-              "&nbsp;<span style='float: right;' class='cux-icon-chevron_left largeIcon expand'></span>" +
-          "</div>" +
-          "<div class='hsVerticalNavigation nopadding'>" +
-            "<uib-accordion close-others='false'>" +
-              "<uib-accordion-group is-open='true' panel-class='panel-no-padding'>" +
-                "<ul class='tk-vnav'>" +
-                  "<li style='border: none' ng-repeat='cat in filterCategories'>" +
-                    "<div class='tk-vnav-name' ng-class='{collapsed : !cat.expanded}' ng-click='cat.expanded = !cat.expanded; rc.getServiceTypeCount(cat.expanded, $index, cat.filters)'>" +
-                      "{{cat.name}}" +
-                      "<span ng-class='cat.expanded ? \"cux-icon-arrow_down\" : \"cux-icon-arrow_right\"' class='pull-right'></span>" +
-                    "</div>" +
-                    "<ul class='tk-vnav'>" +
-                      "<li ng-repeat='filter in cat.filters' class='tk-vnav-filters-list'>" +
-                        "<div ng-click='toggleFilter(filter)' class='tk-vnav-nested-item nested filteritems'>" +
-                          "<div class='tk-vnav-nested-item-name'>{{filter.displayName}}</div>" +
-                          "<div class='tk-vnav-nested-item-icon'>" +
-                            "<span ng-class='{filter:filter.active}' class='cux-icon-checkmark_action pull-right'></span>" +
-                          "</div>" +
-                        "</div>" +
-                      "</li>" +
-                    "</ul>" +
-                  "</li>" +
-                "</ul>" +
-              "</uib-accordion-group>" +
-            "</uib-accordion>" +
-          "</div>" +
-        "</div>" +
-        "<div id='page-content-wrapper' class='toggled'>" +
-          "<div id='flyoutmenu-menuButton' ng-show='features.flyoutmenu && features.view == \"map\"' class='esriSimpleSlider menu-toggle active' style='width: 30px; height: 30px; cursor: pointer;'>" +
-            "<span style='font-size: 24px' class='cux-icon-menu' data-toggle='tooltip' title='menu'></span>" +
-          "</div>" +
-          "<div id='container'>" +
-              "<div id='mapview' ng-show='features.view == \"map\"'>" +
-                "<div id='mapview-header'>" +
-                  "<p class='largerIcon'> {{visibleResources.length || 0}} Locations</p>" +
-                  // "<div id='search'></div>" +
-                  "<form  ng-show='features.addressChange' ng-submit='changeAddress(inputAddress)' id='client-address-input'>" +
-                    "<input ng-model='inputAddress' type='text' class='form-control' id='inputAddress' placeholder='Enter address'/>" +
-                  "</form>" +
-                "</div>" +
-                "<div id='mapcontrols'>" +
-                  "<div id='toggle'>" +
-                    "<button id='toggle-button' ng-click='toggle(\"list\")'>List View</button>" +
-                  "</div>" +
-                "</div>" +
-                "<div id='map'></div>" +
-                "<div id='travel' ng-show='features.travel' ng-class='travelOptions.selected ? \"travel-open\" : \"travel-minimized\"'>" +
-                  "<div ng-class='{\"spinner\":travelSlider.options.disabled}'></div>" +
-                  "<img style='vertical-align: baseline;' ng-click='travelOptions.selected = !travelOptions.selected; loadTravelRadius(member, \"drive\", travelSlider.value)' ng-if='travelOptions.selected == false' src='https://rawgit.com/savtwo/esri-map/master/radius_pin_small.png' width='40' height='40'>" +
-                  "<img id='travel-icons' ng-class='{\"travel-type-icon\":!travelSlider.options.disabled, \"travel-type-icon-disabled\":travelSlider.options.disabled}' ng-click='loadTravelRadius(member, \"drive\", travelSlider.value)' ng-if='travelOptions.selected == true && travelOptions.type != \"drive\"' src='https://rawgit.com/savtwo/esri-map/master/drive_off.png'>" +
-                  "<img id='travel-icons' ng-class='{\"travel-type-icon\":!travelSlider.options.disabled, \"travel-type-icon-disabled\":travelSlider.options.disabled}' ng-if='travelOptions.selected == true && travelOptions.type == \"drive\"' src='https://rawgit.com/savtwo/esri-map/master/drive_on.png'>" +
-                  "<img id='travel-icons' ng-class='{\"travel-type-icon-walk\":!travelSlider.options.disabled, \"travel-type-icon-walk-disabled\":travelSlider.options.disabled}' ng-click='loadTravelRadius(member, \"walk\", travelSlider.value)' ng-if='travelOptions.selected == true && travelOptions.type != \"walk\"' src='https://rawgit.com/savtwo/esri-map/master/walk_off.png' height='32'>" +
-                  "<img id='travel-icons' ng-class='{\"travel-type-icon-walk\":!travelSlider.options.disabled, \"travel-type-icon-walk-disabled\":travelSlider.options.disabled}' ng-if='travelOptions.selected == true && travelOptions.type == \"walk\"' src='https://rawgit.com/savtwo/esri-map/master/walk_on.png' height='32'>" +
-                  "<div id='slidercontainer'>" +
-                    "<rzslider rz-slider-model='travelSlider.value' rz-slider-options='travelSlider.options'></rzslider>" +
-                  "</div>" +
-                  "<img style='vertical-align: baseline;' ng-class='{\"travel-toggle-icon\":!travelSlider.options.disabled, \"travel-toggle-icon-disabled\":travelSlider.options.disabled}' ng-click='travelOptions.selected = !travelOptions.selected; clearTravelRadius(map)' ng-if='travelOptions.selected == true' src='https://rawgit.com/savtwo/esri-map/master/radius_pin_small.png' width='40' height='40'>" +
-                "</div>" +
-                "<div ng-class='{detailsviewpadded: features.flyoutmenu}' id='detailsview' ng-if='show'>" +
-                  "<div class='detailsview-header'>" +
-                    "<span class='detailsview-name'>{{attrs.Name}}</span><span ng-click='closeDetails(false)' class='close-list'>X</span>" +
-                  "</div><br/>" +
-                  "Category: {{attrs.ServiceCategory}}<br/>" +
-                  "Service Type: {{attrs.ServiceType}}<br/><br/>" +
-                  "Address: {{attrs.AddressSingle}}<br/>" +
-                  "Phone: {{attrs.Phone || None}}<br/>" +
-                  "Email: {{attrs.Email || None}}<br/>" +
-                  "Hours: {{attrs.Hours || None}}<br/>" +
-                  "Website: {{attrs.Website || None}}<br/>" +
-                  "Tags: {{attrs.SearchTags}}<br/><br/>" +
-                  "<button ng-if='!features.flyoutmenu  && !features.point' class='provider-select' ng-click='provider(attrs)'>Select Provider</button>" +
-                "</div>" +
-              "</div>" +
-              "<div id='listview-wrapper' ng-show='features.view == \"list\"'>" +
-                "<div id='listview-header'>" +
-                  "<p class='largerIcon'> {{visibleResources.length || 0}} Locations</p>" +
-                  "<input ng-model='search.attributes.$' type='text' class='form-control searchFilter' placeholder='Search'/>" +
-                  "<form ng-show='features.addressChange' ng-submit='updateAddress(inputAddress)' id='client-address-input'>" +
-                    "<input ng-model='inputAddress' type='text' class='form-control' id='inputAddressList' placeholder='Enter address'/>" +
-                  "</form>" +
-                "</div>" +
-                "<div id='listcontrols'>" +
-                  "<div id='toggle'>" +
-                    "<select id='sort' ng-model='sortType'>" +
-                      "<option ng-click='sortType = \"attributes.Name\"' value='attributes.Name'>Name</option>" +
-                      "<option ng-click='sortType = \"attributes.Time\"' value='attributes.Time'>Time</option>" +
-                      "<option ng-click='sortType = \"attributes.Distance\"' value='attributes.Distance'>Distance</option>" +
-                    "</select>" +
-                    "<button id='toggle-button' ng-click='toggle(\"map\")'>Map View</button>" +
-                  "</div>" +
-                "</div>" +
-                "<div id='listcontainer'>" +
-                  "<div id='listtable'>" +
-                    "<table class='table table-listview'>" +
-                      "<thead style='text-align: center'>" +
-                        "<th width='33.3%'>Name</th>"+
-                        "<th width='33.3%'>Address</th>"+
-                        "<th width='33.3%'>Distance | Time</th>"+
-                      "</thead>" +
-                      "<tbody ng-repeat='resource in visibleResources | orderBy:sortType | filter:search as resources'>" +
-                        "<tr>" +
-                          "<td><h6 class='listview-h1'><span>{{resource.attributes.Name}}</span></h6></td>" +
-                          "<td><p>{{resource.attributes.AddressSingle}}</p></td>" +
-                          "<td class='distance' ng-if='resource.attributes.Distance'>" +
-                            "{{resource.attributes.Distance | number:2}} mi | {{resource.attributes.Time}} minutes" +
-                          "</td>" +
-                          "<td ng-if='!resource.attributes.Distance'>Unknown distance</td>" +  
-                        "</tr>" +
-                        "<tr>" +
-                          "<td><button ng-if='!features.flyoutmenu  && !features.point' class='provider-select' ng-click='provider(resource.attributes)'>Select Provider</button></td>" +
-                          "<td>Phone: {{resource.attributes.Phone || 'Not found'}}</td>" +
-                          "<td></td>" +    
-                        "</tr>" +
-                      "</tbody>" +
-                      "<tbody ng-if='resources.length == 0'>" +
-                        "<tr>" +
-                          "<td width='100%'>" +
-                            "No Resources Found" +
-                          "</td" +
-                        "</tr" +
-                      "</tbody>" +
-                    "</table>" +
-                  "</div>" +
-                "</div>" +
-              "</div>" +
-            "</div>" +
-            "<flyoutmenu body='page-content-wrapper' flyout-menu='flyoutmenu-wrapper'" +
-            "menu-button='flyoutmenu-menuButton' close-button='flyoutmenu-closeButton'>" +
-            "</flyoutmenu>" +
-          "</div>"
-      );
-    }
+  angular.module("IE.crfMap").service("menuService", menuService);
+
+  function menuService() {
+    var self = this;
+
+    self.left = 0;
+  }
+})();
+
+/* eslint-disable */
+(function() {
+   "use strict"
+
+    angular.module("IE.crfMap")
+    .factory("RzSliderOptions", RzSliderOptions)
+    .factory("rzThrottle", rzThrottle)
+    .factory("RzSlider", RzSlider)
+    .directive("rzslider",rzslider)
+    .run(runSlider);
 
     function RzSliderOptions() {
       var defaultOptions = {
