@@ -60,7 +60,8 @@
 }*/
 
 #mapview-header {
-  height: 70px;
+/*  height: 70px; */
+  display:table;
   width: 100%;
   text-align: center;
 }
@@ -71,7 +72,7 @@
 }
 
 #mapview {
-  position: absolute;
+  position: relative;
   height: 100%;
   width: 100%;
   margin: 0;
@@ -182,7 +183,8 @@
 }
 
 #listview-header {
-  height: 70px;
+  /* height: 70px; */
+  display:table;
   width: 100%;
   text-align: center;
 }
@@ -258,20 +260,29 @@
 
 /* travel radius */
 
+
 #travel {
   background-color: white;
   border-radius: 5px;
   border: 1px solid #57585A;
   box-sizing: content-box;
+/*  display: none; */
   overflow: hidden;
-  position: absolute;
-  right: 20px;
+  position: relative;
+  right:1em;
   text-align: right;
-  top: calc(100vh - 70rem);
-  width: calc(100vh - 53rem);
+  top:2em;
+  float:right;
+  width: calc(100vh - 55rem);
   white-space: nowrap;
   z-index: 1;
   height: 50px;
+}
+
+#travelWrap{
+  height:0;
+  position:absolute;
+  width: 100%;
 }
 
 #travel:hover {

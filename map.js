@@ -729,7 +729,7 @@
           "<div id='container'>" +
               "<div id='mapview' ng-show='features.view == \"map\"'>" +
                 "<div id='mapview-header'>" +
-                  "<p class='largerIcon'> {{visibleResources.length || 0}} Locations</p>" +
+                //  "<p class='largerIcon'> {{visibleResources.length || 0}} Locations</p>" +
                   // "<div id='search'></div>" +
                   "<form  ng-show='features.addressChange' ng-submit='changeAddress(inputAddress)' id='client-address-input'>" +
                     "<input ng-model='inputAddress' type='text' class='form-control' id='inputAddress' placeholder='Enter address'/>" +
@@ -739,20 +739,24 @@
                   "<div id='toggle'>" +
                     "<button id='toggle-button' ng-click='toggle(\"list\")'>List View</button>" +
                   "</div>" +
-                "</div>" +
-                "<div id='map' ng-class='{mapnoflyout: !features.flyoutmenut}'></div>" +
-                "<div id='travel' ng-show='features.travel' ng-class='travelOptions.selected ? \"travel-open\" : \"travel-minimized\"'>" +
-                  "<div ng-class='{\"spinner\":travelSlider.options.disabled}'></div>" +
-                  "<img style='vertical-align: baseline;' ng-click='travelOptions.selected = !travelOptions.selected; loadTravelRadius(member, \"drive\", travelSlider.value)' ng-if='travelOptions.selected == false' src='https://resourcefinder-stg.optum.com/app/api/widget/radius_pin_small.png' width='40' height='40'>" +
-                  "<img id='travel-icons' ng-class='{\"travel-type-icon\":!travelSlider.options.disabled, \"travel-type-icon-disabled\":travelSlider.options.disabled}' ng-click='loadTravelRadius(member, \"drive\", travelSlider.value)' ng-if='travelOptions.selected == true && travelOptions.type != \"drive\"' src='https://resourcefinder-stg.optum.com/app/api/widget/drive_off.png'>" +
-                  "<img id='travel-icons' ng-class='{\"travel-type-icon\":!travelSlider.options.disabled, \"travel-type-icon-disabled\":travelSlider.options.disabled}' ng-if='travelOptions.selected == true && travelOptions.type == \"drive\"' src='https://resourcefinder-stg.optum.com/app/api/widget/drive_on.png'>" +
-                  "<img id='travel-icons' ng-class='{\"travel-type-icon-walk\":!travelSlider.options.disabled, \"travel-type-icon-walk-disabled\":travelSlider.options.disabled}' ng-click='loadTravelRadius(member, \"walk\", travelSlider.value)' ng-if='travelOptions.selected == true && travelOptions.type != \"walk\"' src='https://resourcefinder-stg.optum.com/app/api/widget/walk_off.png' height='32'>" +
-                  "<img id='travel-icons' ng-class='{\"travel-type-icon-walk\":!travelSlider.options.disabled, \"travel-type-icon-walk-disabled\":travelSlider.options.disabled}' ng-if='travelOptions.selected == true && travelOptions.type == \"walk\"' src='https://resourcefinder-stg.optum.com/app/api/widget/walk_on.png' height='32'>" +
-                  "<div id='slidercontainer'>" +
-                    "<rzslider rz-slider-model='travelSlider.value' rz-slider-options='travelSlider.options'></rzslider>" +
+              "</div>" +
+               "<div id='travelWrap' class='travelWrap'>" +
+                  "<div id='travel' ng-show='features.travel' ng-class='travelOptions.selected ? \"travel-open\" : \"travel-minimized\"'>" +
+                    "<div ng-class='{\"spinner\":travelSlider.options.disabled}'></div>" +
+                    "<img style='vertical-align: baseline;' ng-click='travelOptions.selected = !travelOptions.selected; loadTravelRadius(member, \"drive\", travelSlider.value)' ng-if='travelOptions.selected == false' src='https://resourcefinder-stg.optum.com/app/api/widget/radius_pin_small.png' width='40' height='40'>" +
+                    "<img id='travel-icons' ng-class='{\"travel-type-icon\":!travelSlider.options.disabled, \"travel-type-icon-disabled\":travelSlider.options.disabled}' ng-click='loadTravelRadius(member, \"drive\", travelSlider.value)' ng-if='travelOptions.selected == true && travelOptions.type != \"drive\"' src='https://resourcefinder-stg.optum.com/app/api/widget/drive_off.png'>" +
+                    "<img id='travel-icons' ng-class='{\"travel-type-icon\":!travelSlider.options.disabled, \"travel-type-icon-disabled\":travelSlider.options.disabled}' ng-if='travelOptions.selected == true && travelOptions.type == \"drive\"' src='https://resourcefinder-stg.optum.com/app/api/widget/drive_on.png'>" +
+                    "<img id='travel-icons' ng-class='{\"travel-type-icon-walk\":!travelSlider.options.disabled, \"travel-type-icon-walk-disabled\":travelSlider.options.disabled}' ng-click='loadTravelRadius(member, \"walk\", travelSlider.value)' ng-if='travelOptions.selected == true && travelOptions.type != \"walk\"' src='https://resourcefinder-stg.optum.com/app/api/widget/walk_off.png' height='32'>" +
+                    "<img id='travel-icons' ng-class='{\"travel-type-icon-walk\":!travelSlider.options.disabled, \"travel-type-icon-walk-disabled\":travelSlider.options.disabled}' ng-if='travelOptions.selected == true && travelOptions.type == \"walk\"' src='https://resourcefinder-stg.optum.com/app/api/widget/walk_on.png' height='32'>" +
+                    "<div id='slidercontainer'>" +
+                      "<rzslider rz-slider-model='travelSlider.value' rz-slider-options='travelSlider.options'></rzslider>" +
+                    "</div>" +
+                    "<img style='vertical-align: baseline;' ng-class='{\"travel-toggle-icon\":!travelSlider.options.disabled, \"travel-toggle-icon-disabled\":travelSlider.options.disabled}' ng-click='travelOptions.selected = !travelOptions.selected; clearTravelRadius(map)' ng-if='travelOptions.selected == true' src='https://resourcefinder-stg.optum.com/app/api/widget/radius_pin_small.png' width='40' height='40'>" +
                   "</div>" +
-                  "<img style='vertical-align: baseline;' ng-class='{\"travel-toggle-icon\":!travelSlider.options.disabled, \"travel-toggle-icon-disabled\":travelSlider.options.disabled}' ng-click='travelOptions.selected = !travelOptions.selected; clearTravelRadius(map)' ng-if='travelOptions.selected == true' src='https://resourcefinder-stg.optum.com/app/api/widget/radius_pin_small.png' width='40' height='40'>" +
-                "</div>" +
+              "</div>" +
+
+                "<div id='map' ng-class='{mapnoflyout: !features.flyoutmenut}'></div>" +
+
                 "<div ng-class='{detailsviewpadded: features.flyoutmenu}' id='detailsview' ng-if='show'>" +
                   "<div class='detailsview-header'>" +
                     "<span class='detailsview-name'>{{attrs.Name}}</span><span ng-click='closeDetails(false)' class='close-list'>X</span>" +
@@ -770,7 +774,7 @@
               "</div>" +
               "<div id='listview-wrapper' ng-show='features.view == \"list\"'>" +
                 "<div id='listview-header'>" +
-                  "<p class='largerIcon'> {{visibleResources.length || 0}} Locations</p>" +
+              //    "<p class='largerIcon'> {{visibleResources.length || 0}} Locations</p>" +
                   "<input ng-model='search.attributes.$' type='text' class='form-control searchFilter' placeholder='Search'/>" +
                   "<form ng-show='features.addressChange' ng-submit='updateAddress(inputAddress)' id='client-address-input'>" +
                     "<input ng-model='inputAddress' type='text' class='form-control' id='inputAddressList' placeholder='Enter address'/>" +
