@@ -274,6 +274,9 @@
   top:2em;
   float:right;
   width: calc(100vh - 55rem);
+  width: -moz-calc(100vh - 55rem);
+  width:80%;
+
   white-space: nowrap;
   z-index: 1;
   height: 50px;
